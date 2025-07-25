@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo[1].png'; // Using the specific uploaded logo name
-
+import AuthPage from '../pages/AuthPage'
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, user, logout } = AuthPage();
 
   const handleLogout = () => {
     logout();
