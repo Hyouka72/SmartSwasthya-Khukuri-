@@ -1,10 +1,10 @@
-package com.SmartSwasthya.Backend;
+package com.backend.SmartSwasthya;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BackendApplicationTests {
+class SmartSwasthyaApplicationTests {
 
 	@Test
 	void contextLoads() {
