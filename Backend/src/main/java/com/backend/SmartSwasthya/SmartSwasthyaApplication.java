@@ -1,13 +1,13 @@
-package com.SmartSwasthya.Backend;
+package com.backend.SmartSwasthya;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BackendApplication {
+public class SmartSwasthyaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BackendApplication.class, args);
+		SpringApplication.run(SmartSwasthyaApplication.class, args);
 	}
 
 }
