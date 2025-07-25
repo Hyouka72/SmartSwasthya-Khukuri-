@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../assets/logo[1].png'; // Using the specific uploaded logo name
+import logo from '../assets/logo.png'; // Using the specific uploaded logo name
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
