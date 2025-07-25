@@ -22,7 +22,6 @@ public class Paitent {
     private String gender;
     private String age;
 
-    private String contact;
 
     @ManyToOne
     private Hospital hospital;
