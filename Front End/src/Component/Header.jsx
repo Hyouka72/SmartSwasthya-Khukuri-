@@ -199,46 +199,10 @@ function Header() {
               </button>
               {isServicesDropdownOpen && (
                 <div className="mt-2 w-full bg-gray-50 rounded-md py-2 border border-gray-100">
-                  <Link
-                    to="/services/general-checkups"
-                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsServicesDropdownOpen(false);
-                    }}
-                  >
-                    General Check-ups
-                  </Link>
-                  <Link
-                    to="/services/preventive-care"
-                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsServicesDropdownOpen(false);
-                    }}
-                  >
-                    Preventive Care
-                  </Link>
-                  <Link
-                    to="/services/telehealth-consultations"
-                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsServicesDropdownOpen(false);
-                    }}
-                  >
-                    Telehealth Consultations
-                  </Link>
-                  <Link
-                    to="/services/emergency-care"
-                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsServicesDropdownOpen(false);
-                    }}
-                  >
-                    Emergency Care
-                  </Link>
+                  <Link to="/services/general-checkups" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>General Check-ups</Link>
+                  <Link to="/services/preventive-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Preventive Care</Link>
+                  <Link to="/services/telehealth-consultations" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Telehealth Consultations</Link>
+                  <Link to="/services/emergency-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Emergency Care</Link>
                 </div>
               )}
             </div>
