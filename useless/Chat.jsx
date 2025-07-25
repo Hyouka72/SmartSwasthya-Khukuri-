@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 
-function App() {
+function Chat() {
   // State to control the visibility of the chat window
   const [isChatOpen, setIsChatOpen] = useState(false);
   // State to store chat messages
@@ -456,4 +456,4 @@ function App() {
   );
 }
 
-export default App;
+export default Chat;
