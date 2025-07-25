@@ -1,17 +1,23 @@
 // Frontend/src/Component/Header.jsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo[1].png";
 import { useAuth } from "../contexts/AuthContext";
+import { SignIn, SignUp, useUser, SignOutButton } from "@clerk/clerk-react"; // Import useUser and SignOutButton
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
-  const { isLoggedIn, user, logout } = useAuth();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const { isLoggedIn, logout } = useAuth(); // Assuming useAuth manages a broader app-level login state, if still needed.
+  const { user } = useUser(); // Get the user object from Clerk's useUser hook
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    // Clerk's SignOutButton handles the actual logout.
+    // If you have custom logout logic in your AuthContext, you can call it here.
+    if (logout) {
+      logout(); // Call your custom logout if it exists
+    }
     navigate("/auth"); // Redirect to auth page after logout
   };
 
@@ -21,7 +27,6 @@ function Header() {
         {/* Logo */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            {/* UPDATED: Use the imported Logo variable as the src */}
             <img src={logo} alt="Swastha Logo" className="h-10 sm:h-12 mr-3" />
             <span className="text-2xl sm:text-3xl font-bold text-blue-700">
               Swastha
@@ -63,10 +68,30 @@ function Header() {
             </button>
             {isServicesDropdownOpen && (
               <div className="absolute left-0 mt-0.5 w-60 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-100">
-                <Link to="/services/general-checkups" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">General Check-ups</Link>
-                <Link to="/services/preventive-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">Preventive Care</Link>
-                <Link to="/services/telehealth-consultations" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">Telehealth Consultations</Link>
-                <Link to="/services/emergency-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">Emergency Care</Link>
+                <Link
+                  to="/services/general-checkups"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                >
+                  General Check-ups
+                </Link>
+                <Link
+                  to="/services/preventive-care"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                >
+                  Preventive Care
+                </Link>
+                <Link
+                  to="/services/telehealth-consultations"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                >
+                  Telehealth Consultations
+                </Link>
+                <Link
+                  to="/services/emergency-care"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                >
+                  Emergency Care
+                </Link>
               </div>
             )}
           </div>
@@ -88,13 +113,29 @@ function Header() {
           >
             Appointment
           </Link>
+
+          {/* Conditional rendering for Login/Signup or Profile/Logout */}
           {user ? (
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white px-6 py-2.5 rounded-full hover:bg-red-600 transition duration-300 shadow-md"
-            >
-              Logout
-            </button>
+            <>
+              {/* User Profile Picture/Name */}
+              <div className="flex items-center space-x-2">
+                {user.imageUrl && (
+                  <img
+                    src={user.imageUrl}
+                    alt={user.fullName || "User Profile"}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                )}
+                <span className="text-gray-700 text-lg font-medium">
+                  {user.fullName || user.emailAddresses[0]?.emailAddress}
+                </span>
+              </div>
+              <SignOutButton signOutCallback={() => navigate("/auth")}>
+                <button className="bg-red-500 text-white px-6 py-2.5 rounded-full hover:bg-red-600 transition duration-300 shadow-md">
+                  Logout
+                </button>
+              </SignOutButton>
+            </>
           ) : (
             <Link
               to="/auth"
@@ -179,10 +220,47 @@ function Header() {
               </button>
               {isServicesDropdownOpen && (
                 <div className="mt-2 w-full bg-gray-50 rounded-md py-2 border border-gray-100">
-                  <Link to="/services/general-checkups" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>General Check-ups</Link>
-                  <Link to="/services/preventive-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Preventive Care</Link>
-                  <Link to="/services/telehealth-consultations" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Telehealth Consultations</Link>
-                 
+                  <Link
+                    to="/services/general-checkups"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsServicesDropdownOpen(false);
+                    }}
+                  >
+                    General Check-ups
+                  </Link>
+                  <Link
+                    to="/services/preventive-care"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsServicesDropdownOpen(false);
+                    }}
+                  >
+                    Preventive Care
+                  </Link>
+                  <Link
+                    to="/services/telehealth-consultations"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsServicesDropdownOpen(false);
+                    }}
+                  >
+                    Telehealth Consultations
+                  </Link>
+                  {/* Emergency Care was missing in mobile, added here for consistency */}
+                  <Link
+                    to="/services/emergency-care"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsServicesDropdownOpen(false);
+                    }}
+                  >
+                    Emergency Care
+                  </Link>
                 </div>
               )}
             </div>
@@ -216,17 +294,35 @@ function Header() {
             >
               Appointment
             </Link>
+
+            {/* Conditional rendering for Mobile Navigation */}
             {user ? (
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setIsMobileMenuOpen(false);
-                  setIsServicesDropdownOpen(false);
-                }}
-                className="bg-red-500 text-white px-6 py-2.5 rounded-full hover:bg-red-600 transition duration-300 shadow-md w-max"
-              >
-                Logout
-              </button>
+              <>
+                {/* User Profile Picture/Name for mobile */}
+                <div className="flex items-center space-x-2">
+                  {user.imageUrl && (
+                    <img
+                      src={user.imageUrl}
+                      alt={user.fullName || "User Profile"}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="text-gray-700 text-lg font-medium">
+                    {user.fullName || user.emailAddresses[0]?.emailAddress}
+                  </span>
+                </div>
+                <SignOutButton
+                  signOutCallback={() => {
+                    navigate("/auth");
+                    setIsMobileMenuOpen(false);
+                    setIsServicesDropdownOpen(false);
+                  }}
+                >
+                  <button className="bg-red-500 text-white px-6 py-2.5 rounded-full hover:bg-red-600 transition duration-300 shadow-md w-max">
+                    Logout
+                  </button>
+                </SignOutButton>
+              </>
             ) : (
               <Link
                 to="/auth"
