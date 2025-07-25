@@ -63,30 +63,10 @@ function Header() {
             </button>
             {isServicesDropdownOpen && (
               <div className="absolute left-0 mt-0.5 w-60 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-100">
-                <Link
-                  to="/services/general-checkups"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                >
-                  General Check-ups
-                </Link>
-                <Link
-                  to="/services/preventive-care"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                >
-                  Preventive Care
-                </Link>
-                <Link
-                  to="/services/telehealth-consultations"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                >
-                  Telehealth Consultations
-                </Link>
-                <Link
-                  to="/services/emergency-care"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                >
-                  Emergency Care
-                </Link>
+                <Link to="/services/general-checkups" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">General Check-ups</Link>
+                <Link to="/services/preventive-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">Preventive Care</Link>
+                <Link to="/services/telehealth-consultations" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">Telehealth Consultations</Link>
+                <Link to="/services/emergency-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200">Emergency Care</Link>
               </div>
             )}
           </div>
@@ -202,7 +182,7 @@ function Header() {
                   <Link to="/services/general-checkups" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>General Check-ups</Link>
                   <Link to="/services/preventive-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Preventive Care</Link>
                   <Link to="/services/telehealth-consultations" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Telehealth Consultations</Link>
-                  <Link to="/services/emergency-care" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200" onClick={() => { setIsMobileMenuOpen(false); setIsServicesDropdownOpen(false); }}>Emergency Care</Link>
+                 
                 </div>
               )}
             </div>
