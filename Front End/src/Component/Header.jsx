@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/logo[1].png";
-import { useAuth } from "../contexts/AuthContext";
-import { useUser, SignOutButton } from "@clerk/clerk-react";
-import QRCode from "react-qr-code";
+import logo from "../assets/logo[1].png"; // Make sure this path is correct
+import { useAuth } from "../contexts/AuthContext"; // Assuming this context exists
+import { useUser, SignOutButton } from "@clerk/clerk-react"; // Assuming Clerk integration
+
+import QRCode from "react-qr-code"; // Ensure react-qr-code is correctly installed: npm install react-qr-code or yarn add react-qr-code
 
 // Dummy Doctor Data
 const dummyDoctors = [
@@ -28,8 +29,8 @@ function Header() {
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
 
-  const { logout } = useAuth();
-  const { user } = useUser();
+  const { logout } = useAuth(); // Destructure logout from useAuth
+  const { user } = useUser(); // Destructure user from useUser (Clerk)
   const navigate = useNavigate();
   const qrCodeData = user ? user.id : "";
 
@@ -104,7 +105,9 @@ function Header() {
         </Link>
 
         {/* Search Bar (visible on desktop, takes full width on mobile) */}
-        <div className="relative w-full md:w-1/3 order-3 md:order-none">
+        {/* Adjusted order for better responsiveness: Search bar comes after logo on mobile,
+            but then aligns in the middle on desktop. */}
+        <div className="relative w-full md:w-1/3 order-3 md:order-none md:flex-grow md:mx-4">
           <input
             type="text"
             placeholder="Search doctors by name or specialty..."
@@ -114,7 +117,8 @@ function Header() {
             onFocus={() =>
               searchQuery.length > 0 && setIsSearchDropdownOpen(true)
             }
-            onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)} // Delay to allow click on results
+            // Use onMouseDown instead of onBlur for dropdown to prevent immediate closing
+            onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
           />
           <svg
             className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -137,7 +141,7 @@ function Header() {
                 <button
                   key={doctor.id}
                   className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                  onClick={() => handleDoctorSelect(doctor)}
+                  onMouseDown={() => handleDoctorSelect(doctor)} // Use onMouseDown to trigger before onBlur
                 >
                   <span className="font-semibold">{doctor.name}</span> -{" "}
                   <span className="text-sm text-gray-600">
@@ -157,6 +161,7 @@ function Header() {
         </div>
 
         {/* Desktop Navigation */}
+        {/* Ensured proper ordering and spacing for desktop */}
         <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 order-2">
           <Link
             to="/"
@@ -209,15 +214,9 @@ function Header() {
                   className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
                   onClick={closeAllOverlays}
                 >
-                  Telehealth Consultations
+                  AI Assistance
                 </Link>
-                <Link
-                  to="/services/emergency-care"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                  onClick={closeAllOverlays}
-                >
-                  Emergency Care
-                </Link>
+                
               </div>
             )}
           </div>
@@ -288,8 +287,8 @@ function Header() {
           )}
         </nav>
 
-        {/* Mobile Menu Toggle */}
-        <div className="md:hidden order-2">
+        {/* Mobile Menu Toggle (order adjusted for mobile view) */}
+        <div className="md:hidden order-last">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="text-gray-700 focus:outline-none"
@@ -321,9 +320,11 @@ function Header() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation (Conditional Rendering) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white pb-4 shadow-lg">
+        <div className="md:hidden bg-white pb-4 shadow-lg border-t border-gray-100">
+          {" "}
+          {/* Added top border for separation */}
           <nav className="flex flex-col items-center space-y-4 pt-4">
             <Link
               to="/"
@@ -378,15 +379,9 @@ function Header() {
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
                     onClick={closeAllOverlays}
                   >
-                    Telehealth Consultations
+                    AI Asistance
                   </Link>
-                  <Link
-                    to="/services/emergency-care"
-                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                    onClick={closeAllOverlays}
-                  >
-                    Emergency Care
-                  </Link>
+                  
                 </div>
               )}
             </div>

@@ -11,7 +11,7 @@ function AuthPage() {
 
   return (
     <div className="max-w-md mx-auto px-6 sm:px-10 py-12">
-      <section className="p-8 sm:p-10 rounded-xl shadow-lg text-gray-800 text-center">
+      <section className="p-8 sm:p-10 rounded-xl  text-gray-800 text-center">
         {/* The h2 and descriptive p tags are removed as Clerk components provide their own titles/descriptions */}
 
         {/* Conditional rendering of Clerk's SignIn or SignUp component */}
