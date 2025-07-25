@@ -1,3 +1,4 @@
+// src/pages/Contact.jsx
 import React, { useState } from 'react';
 
 function Contact() {
@@ -109,7 +110,7 @@ function Contact() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-lg"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
                 placeholder="Your Full Name"
               />
             </div>
@@ -124,7 +125,7 @@ function Contact() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-lg"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
                 placeholder="your.email@example.com"
               />
             </div>
@@ -139,7 +140,7 @@ function Contact() {
                 value={formData.subject}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-lg"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
                 placeholder="Regarding your inquiry..."
               />
             </div>
@@ -154,7 +155,7 @@ function Contact() {
                 value={formData.message}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-lg"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
                 placeholder="Type your message here..."
               ></textarea>
             </div>
@@ -177,7 +178,7 @@ function Contact() {
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-blue-700
-                           transition-all duration-300 transform hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                           transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Send Message
               </button>
@@ -191,7 +192,7 @@ function Contact() {
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-8">Find Us on the Map</h2>
         <div className="relative overflow-hidden rounded-xl" style={{ paddingTop: '56.25%' }}> {/* 16:9 Aspect Ratio */}
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.783011311545!2d85.27599707449557!3d27.69230537618956!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19e273f7a1b5%3A0x6b40e7a25a8e23b8!2sKirtipur%2C%20Nepal!5e0!3m2!1sen!2snp!4v1716616800000!5m2!1sen!2snp"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.783011311545!2d85.27599707449557!3d27.69230537618956!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19e273f7a1b5%3A0x6b40e7a25a8e23b8!2sKirtipur%2C%20Nepal!5e0!3m2!1sen!2snp!4v1716616800000!5m2!1sen!2snp" // Replace with your actual Google Maps embed URL
             width="100%"
             height="100%"
             style={{ border: 0, position: 'absolute', top: 0, left: 0 }}

@@ -1,11 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+// src/main.jsx
+import React from 'react'; // Imports the React library
+import ReactDOM from 'react-dom/client'; // Imports ReactDOM for DOM manipulation
+import App from './App.jsx'; // Imports your main App component
+import './index.css'; // Imports your global CSS file (assuming it's index.css)
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-    
-  </StrictMode>,
-)
+ReactDOM.createRoot(document.getElementById('root')).render(
+  // Renders your React application into the HTML element with id="root"
+  <React.StrictMode>
+    {/* React.StrictMode is a tool for highlighting potential problems in an application */}
+    <App /> {/* Your main application component */}
+  </React.StrictMode>,
+);
