@@ -144,7 +144,7 @@ function Home() {
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-12">What Our Patients Say</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 justify-items-center">
           <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
-            <p className="text-gray-700 italic mb-6 leading-loose">"The Ease and Compassion through which the "</p>
+            <p className="text-gray-700 italic mb-6 leading-loose">"The Ease through which this app helped me in this dire situation has helped me alot in the difficult time of my life "</p>
             <p className="font-semibold text-gray-900">- Madan Shrestha, Patient</p>
           </div>
           <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
