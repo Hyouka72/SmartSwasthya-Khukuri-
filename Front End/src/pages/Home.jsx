@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Hospital1 from '../assets/hospital1.jpg';
+import Chat from "../Component/Chat.jsx"
 function Home() {
   // Define an array of slider content objects
   const sliderContent = [
@@ -183,6 +184,7 @@ function Home() {
           Get in Touch
         </button>
       </section>
+      <Chat/>
     </div>
   );
 }

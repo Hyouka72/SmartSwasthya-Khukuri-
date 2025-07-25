@@ -1,5 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
 
+import React, { useState, useRef, useEffect } from "react";
+import hospital1 from "../assets/hospital1.jpg";
+import hospital2 from "../assets/hospital2.jpeg";
+import hospital3 from "../assets/hospital3.jpg";
 function Chat() {
   // State to control the visibility of the chat window
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -83,74 +86,27 @@ function Chat() {
     setSelectedImage(null);
     setImagePreviewUrl(null);
 
-    let aiResponseText = "";
-    const isTextOnly = inputText.trim() && !selectedImage;
-    const isImageOnly = !inputText.trim() && selectedImage;
-    const isTextAndImage = inputText.trim() && selectedImage;
+    // Simulate AI typing with a random delay
+    const typingDelay = Math.random() * 1500 + 500; // Random delay between 500ms and 2000ms
 
-    if (isTextOnly) {
-      aiResponseText = {};
-    } else if (isImageOnly) {
-      aiResponseText =
-        "Thanks for sending an image! What would you like to know about it?";
-    } else if (isTextAndImage) {
-      aiResponseText =
-        "I received both your text and an image! Let's analyze them together.";
-    }
+    setTimeout(async () => {
+      let aiResponseText = "";
+      const isTextOnly = inputText.trim() && !selectedImage;
+      const isImageOnly = !inputText.trim() && selectedImage;
+      const isTextAndImage = inputText.trim() && selectedImage;
 
-    // If a predefined response is determined, directly add it and bypass the API call
-    if (aiResponseText) {
-      const newAiMessage = {
-        id: Date.now() + 1,
-        sender: "ai",
-        text: aiResponseText,
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      setMessages((prevMessages) => [...prevMessages, newAiMessage]);
-      setIsLoading(false); // Hide loading indicator
-      return; // Exit the function after sending predefined message
-    }
+      if (isTextOnly) {
+        aiResponseText = "hi aswin";
+      } else if (isImageOnly) {
+        aiResponseText =
+          "Thanks for sending an image! What would you like to know about it?";
+      } else if (isTextAndImage) {
+        aiResponseText =
+          "I received both your text and an image! Let's analyze them together.";
+      }
 
-    // --- Original Gemini API call logic (will only run if no predefined message is set) ---
-    let chatHistory = [];
-    let parts = [];
-
-    if (inputText.trim()) {
-      parts.push({ text: inputText.trim() });
-    }
-    if (imagePreviewUrl) {
-      const base64ImageData = imagePreviewUrl.split(",")[1];
-      parts.push({
-        inlineData: {
-          mimeType: selectedImage.type || "image/png",
-          data: base64ImageData,
-        },
-      });
-    }
-
-    chatHistory.push({ role: "user", parts: parts });
-
-    const payload = { contents: chatHistory };
-    const apiKey = "";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-    try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (
-        result.candidates &&
-        result.candidates.length > 0 &&
-        result.candidates[0].content &&
-        result.candidates[0].content.parts &&
-        result.candidates[0].content.parts.length > 0
-      ) {
-        aiResponseText = result.candidates[0].content.parts[0].text;
+      // If a predefined response is determined, directly add it and bypass the API call
+      if (aiResponseText) {
         const newAiMessage = {
           id: Date.now() + 1,
           sender: "ai",
@@ -158,32 +114,84 @@ function Chat() {
           timestamp: new Date().toLocaleTimeString(),
         };
         setMessages((prevMessages) => [...prevMessages, newAiMessage]);
-      } else {
-        console.error("Gemini API response structure unexpected:", result);
+        setIsLoading(false); // Hide loading indicator
+        return; // Exit the function after sending predefined message
+      }
+
+      // --- Original Gemini API call logic (will only run if no predefined message is set) ---
+      let chatHistory = [];
+      let parts = [];
+
+      if (inputText.trim()) {
+        parts.push({ text: inputText.trim() });
+      }
+      if (imagePreviewUrl) {
+        const base64ImageData = imagePreviewUrl.split(",")[1];
+        parts.push({
+          inlineData: {
+            mimeType: selectedImage.type || "image/png",
+            data: base64ImageData,
+          },
+        });
+      }
+
+      chatHistory.push({ role: "user", parts: parts });
+
+      const payload = { contents: chatHistory };
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (
+          result.candidates &&
+          result.candidates.length > 0 &&
+          result.candidates[0].content &&
+          result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0
+        ) {
+          aiResponseText = result.candidates[0].content.parts[0].text;
+          const newAiMessage = {
+            id: Date.now() + 1,
+            sender: "ai",
+            text: aiResponseText,
+            timestamp: new Date().toLocaleTimeString(),
+          };
+          setMessages((prevMessages) => [...prevMessages, newAiMessage]);
+        } else {
+          console.error("Gemini API response structure unexpected:", result);
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: Date.now() + 1,
+              sender: "ai",
+              text: "Sorry, I couldn't get a response from the AI.",
+              timestamp: new Date().toLocaleTimeString(),
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error calling Gemini API:", error);
         setMessages((prevMessages) => [
           ...prevMessages,
           {
             id: Date.now() + 1,
             sender: "ai",
-            text: "Sorry, I couldn't get a response from the AI.",
+            text: "An error occurred while communicating with the AI.",
             timestamp: new Date().toLocaleTimeString(),
           },
         ]);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error calling Gemini API:", error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          id: Date.now() + 1,
-          sender: "ai",
-          text: "An error occurred while communicating with the AI.",
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
+    }, typingDelay); // Apply the random delay here
   };
 
   return (
