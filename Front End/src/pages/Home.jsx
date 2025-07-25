@@ -1,5 +1,6 @@
-// src/pages/Home.jsx
+// Frontend/src/pages/Home.jsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function Home() {
   // Define an array of slider content objects
@@ -72,11 +73,14 @@ function Home() {
           <p className="text-lg sm:text-xl leading-relaxed mb-8 opacity-95">
             Compassionate care, innovative solutions, and a healthier future for you and your family.
           </p>
-          <button className="bg-white text-blue-700 hover:bg-blue-800 hover:text-white
-                             font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
-                             transition-all duration-300 transform hover:scale-105 active:scale-100">
+          {/* Updated to use Link for navigation to /appointment */}
+          <Link to="/appointment"
+                className="bg-white text-blue-700 hover:bg-blue-800 hover:text-white
+                           font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
+                           transition-all duration-300 transform hover:scale-105 active:scale-100
+                           inline-block"> {/* Added inline-block for proper Link styling */}
             Book an Appointment
-          </button>
+          </Link>
         </div>
 
         {/* --- Slider Integration (Image and Optional Overlay Content) --- */}
@@ -117,30 +121,29 @@ function Home() {
       <section className="mb-24">
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-12">Our Comprehensive Services</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+          {/* General Check-ups Link */}
+          <Link to="/services/general-checkups" className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">General Check-ups</h3>
             <p className="text-gray-600 leading-normal">Regular health assessments to keep you on track.</p>
-          </div>
-          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Specialized Treatments</h3>
-            <p className="text-gray-600 leading-normal">Expert care for various medical conditions.</p>
-          </div>
-          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+          </Link>
+
+          {/* Preventive Care Link */}
+          <Link to="/services/preventive-care" className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Preventive Care</h3>
             <p className="text-gray-600 leading-normal">Programs designed to prevent illness and promote wellness.</p>
-          </div>
-          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+          </Link>
+
+          {/* Telehealth Consultations Link */}
+          <Link to="/services/telehealth-consultations" className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Telehealth Consultations</h3>
             <p className="text-gray-600 leading-normal">Convenient online medical advice and support.</p>
-          </div>
-          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+          </Link>
+
+          {/* Emergency Care Link */}
+          <Link to="/services/emergency-care" className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Emergency Care</h3>
             <p className="text-gray-600 leading-normal">Rapid response for urgent medical needs.</p>
-          </div>
-          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Mental Health Support</h3>
-            <p className="text-gray-600 leading-normal">Confidential counseling and support services.</p>
-          </div>
+          </Link>
         </div>
       </section>
 
