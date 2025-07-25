@@ -144,12 +144,12 @@ function Home() {
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-12">What Our Patients Say</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 justify-items-center">
           <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
-            <p className="text-gray-700 italic mb-6 leading-loose">"The care I received at Swastha was exceptional. The staff are incredibly kind and the doctors are thorough and knowledgeable. Highly recommend!"</p>
-            <p className="font-semibold text-gray-900">- Jane Doe, Patient</p>
+            <p className="text-gray-700 italic mb-6 leading-loose">"The Ease and Compassion through which the "</p>
+            <p className="font-semibold text-gray-900">- Madan Shrestha, Patient</p>
           </div>
           <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
             <p className="text-gray-700 italic mb-6 leading-loose">"Swastha changed my perspective on healthcare. Their holistic approach truly made a difference in my recovery journey."</p>
-            <p className="font-semibold text-gray-900">- John Smith, Patient</p>
+            <p className="font-semibold text-gray-900">- Hari Gurung, Patient</p>
           </div>
         </div>
       </section>
