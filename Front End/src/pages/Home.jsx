@@ -1,7 +1,7 @@
 // Frontend/src/pages/Home.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
+import Hospital1 from '../assets/hospital1.jpg';
 function Home() {
   // Define an array of slider content objects
   const sliderContent = [
