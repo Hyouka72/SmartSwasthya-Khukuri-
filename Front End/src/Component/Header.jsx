@@ -3,25 +3,45 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo[1].png";
 import { useAuth } from "../contexts/AuthContext";
 import { useUser, SignOutButton } from "@clerk/clerk-react";
-import QRCode from "react-qr-code"; // ✅ Modern QR code component
+import QRCode from "react-qr-code";
+
+// Dummy Doctor Data
+const dummyDoctors = [
+  { id: "doc1", name: "Dr. Alice Smith", specialty: "General Physician" },
+  { id: "doc2", name: "Dr. Bob Johnson", specialty: "Pediatrician" },
+  { id: "doc3", name: "Dr. Carol White", specialty: "Dermatologist" },
+  { id: "doc4", name: "Dr. David Green", specialty: "Cardiologist" },
+  { id: "doc5", name: "Dr. Emily Brown", specialty: "Neurologist" },
+  { id: "doc6", name: "Dr. Frank Black", specialty: "Orthopedic Surgeon" },
+  { id: "doc7", name: "Dr. Grace Lee", specialty: "Ophthalmologist" },
+  { id: "doc8", name: "Dr. Henry Wilson", specialty: "Dentist" },
+];
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false); // New state for profile dropdown
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isQrCodeOpen, setIsQrCodeOpen] = useState(false);
+
+  // Search related states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
 
   const { logout } = useAuth();
   const { user } = useUser();
   const navigate = useNavigate();
   const qrCodeData = user ? user.id : "";
 
-  // Function to close all overlays (mobile menu, dropdowns, QR code, profile dropdown)
+  // Function to close all overlays (mobile menu, dropdowns, QR code, profile dropdown, search dropdown)
   const closeAllOverlays = () => {
     setIsMobileMenuOpen(false);
     setIsServicesDropdownOpen(false);
-    setIsProfileDropdownOpen(false); // Close profile dropdown
+    setIsProfileDropdownOpen(false);
     setIsQrCodeOpen(false);
+    setIsSearchDropdownOpen(false); // Close search dropdown
+    setSearchQuery(""); // Clear search query
+    setFilteredDoctors([]); // Clear filtered doctors
   };
 
   // Toggles the profile dropdown
@@ -29,6 +49,7 @@ function Header() {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
     setIsServicesDropdownOpen(false); // Close other dropdowns
     setIsQrCodeOpen(false); // Ensure QR code is closed if profile dropdown opens
+    setIsSearchDropdownOpen(false); // Close search dropdown
   };
 
   // Handles showing the QR code and closing profile dropdown
@@ -37,22 +58,109 @@ function Header() {
     setIsProfileDropdownOpen(false); // Close profile dropdown after selecting QR
   };
 
+  // Handles changes in the search input
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.length > 0) {
+      const filtered = dummyDoctors.filter(
+        (doctor) =>
+          doctor.name.toLowerCase().includes(query.toLowerCase()) ||
+          doctor.specialty.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredDoctors(filtered);
+      setIsSearchDropdownOpen(true); // Open search dropdown
+    } else {
+      setFilteredDoctors([]);
+      setIsSearchDropdownOpen(false); // Close search dropdown if query is empty
+    }
+    // Close other dropdowns when search is active
+    setIsServicesDropdownOpen(false);
+    setIsProfileDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+    setIsQrCodeOpen(false);
+  };
+
+  // Handles selection of a doctor from search results
+  const handleDoctorSelect = (doctor) => {
+    closeAllOverlays(); // Close all overlays including search
+    navigate(`/doctor/${doctor.id}`); // Navigate to doctor's profile page
+  };
+
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 py-4 flex justify-between items-center">
+    <header className="bg-white shadow-md sticky top-0 z-50 font-inter">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 py-4 flex flex-wrap justify-between items-center gap-y-4">
         {/* Logo */}
         <Link to="/" onClick={closeAllOverlays} className="flex items-center">
-          <img src={logo} alt="Swastha Logo" className="h-10 sm:h-12 mr-3" />
+          <img
+            src={logo}
+            alt="Swastha Logo"
+            className="h-10 sm:h-12 mr-3 rounded-md"
+          />
           <span className="text-2xl sm:text-3xl font-bold text-blue-700">
             Swastha
           </span>
         </Link>
 
+        {/* Search Bar (visible on desktop, takes full width on mobile) */}
+        <div className="relative w-full md:w-1/3 order-3 md:order-none">
+          <input
+            type="text"
+            placeholder="Search doctors by name or specialty..."
+            className="w-full p-2 pl-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 shadow-sm"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onFocus={() =>
+              searchQuery.length > 0 && setIsSearchDropdownOpen(true)
+            }
+            onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)} // Delay to allow click on results
+          />
+          <svg
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+
+          {isSearchDropdownOpen && filteredDoctors.length > 0 && (
+            <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-40 max-h-60 overflow-y-auto">
+              {filteredDoctors.map((doctor) => (
+                <button
+                  key={doctor.id}
+                  className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                  onClick={() => handleDoctorSelect(doctor)}
+                >
+                  <span className="font-semibold">{doctor.name}</span> -{" "}
+                  <span className="text-sm text-gray-600">
+                    {doctor.specialty}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+          {isSearchDropdownOpen &&
+            filteredDoctors.length === 0 &&
+            searchQuery.length > 0 && (
+              <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-40 p-4 text-center text-gray-500">
+                No doctors found.
+              </div>
+            )}
+        </div>
+
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+        <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 order-2">
           <Link
             to="/"
-            className="text-lg text-gray-700 hover:text-blue-700 transition duration-300"
+            className="text-lg text-gray-700 hover:text-blue-700 transition duration-300 font-medium"
             onClick={closeAllOverlays}
           >
             Home
@@ -64,7 +172,7 @@ function Header() {
             onMouseEnter={() => setIsServicesDropdownOpen(true)}
             onMouseLeave={() => setIsServicesDropdownOpen(false)}
           >
-            <button className="flex items-center text-lg text-gray-700 hover:text-blue-700 focus:outline-none py-2">
+            <button className="flex items-center text-lg text-gray-700 hover:text-blue-700 focus:outline-none py-2 font-medium">
               Services
               <svg
                 className="ml-1 w-4 h-4"
@@ -116,14 +224,14 @@ function Header() {
 
           <Link
             to="/about"
-            className="text-lg text-gray-700 hover:text-blue-700 transition duration-300"
+            className="text-lg text-gray-700 hover:text-blue-700 transition duration-300 font-medium"
             onClick={closeAllOverlays}
           >
             About Us
           </Link>
           <Link
             to="/contact"
-            className="text-lg text-gray-700 hover:text-blue-700 transition duration-300"
+            className="text-lg text-gray-700 hover:text-blue-700 transition duration-300 font-medium"
             onClick={closeAllOverlays}
           >
             Contact
@@ -181,7 +289,7 @@ function Header() {
         </nav>
 
         {/* Mobile Menu Toggle */}
-        <div className="md:hidden">
+        <div className="md:hidden order-2">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="text-gray-700 focus:outline-none"
