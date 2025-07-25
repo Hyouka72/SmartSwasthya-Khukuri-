@@ -96,7 +96,7 @@ function Chat() {
       const isTextAndImage = inputText.trim() && selectedImage;
 
       if (isTextOnly) {
-        aiResponseText = "hi aswin";
+        aiResponseText = "Hi User";
       } else if (isImageOnly) {
         aiResponseText =
           "Thanks for sending an image! What would you like to know about it?";
