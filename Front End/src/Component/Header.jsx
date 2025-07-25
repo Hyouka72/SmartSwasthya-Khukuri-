@@ -1,9 +1,18 @@
+// src/Component/Header.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../assets/logo[1].png'; // Using the specific uploaded logo name
+import logo from '../assets/logo[1].png';
+import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isLoggedIn, user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    setIsMobileMenuOpen(false);
+    alert('You have been logged out.');
+  };
 
   return (
     <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-xl sticky top-0 z-50 transition-all duration-300">
@@ -14,9 +23,9 @@ function Header() {
             <img
               src={logo}
               alt="Swastha Logo"
-              className="h-12 w-auto drop-shadow-lg transition-transform duration-300 group-hover:scale-105" // Larger logo, subtle shadow, hover scale
+              className="h-12 w-auto drop-shadow-lg transition-transform duration-300 group-hover:scale-105"
             />
-            <span className="text-4xl font-extrabold text-white drop-shadow-md transition-colors duration-300 group-hover:text-blue-200"> {/* Larger text, shadow, hover color */}
+            <span className="text-4xl font-extrabold text-white drop-shadow-md transition-colors duration-300 group-hover:text-blue-200">
               Swastha
             </span>
           </Link>
@@ -48,14 +57,27 @@ function Header() {
           >
             Contact Us
           </Link>
-          {/* Enhanced Book Appointment button */}
-          <Link
-            to="/appointment"
-            className="bg-white text-blue-800 font-extrabold py-3 px-8 rounded-full shadow-lg hover:bg-blue-100 hover:shadow-xl
-                       transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 border-blue-800"
-          >
-            Book Appointment
-          </Link>
+
+          {/* Conditional rendering for Login/Register vs. Logout */}
+          {isLoggedIn ? (
+            <>
+              <span className="text-lg font-semibold text-blue-200">Hello, {user?.username}!</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/auth"
+              className="bg-white text-blue-800 font-extrabold py-3 px-8 rounded-full shadow-lg hover:bg-blue-100 hover:shadow-xl
+                         transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 border-blue-800"
+            >
+              Login / Register
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -87,9 +109,25 @@ function Header() {
           <Link to="/contact" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
             Contact Us
           </Link>
-          <Link to="/appointment" className="block py-3 text-lg font-extrabold bg-white text-blue-800 rounded-md text-center mt-4 shadow-md hover:bg-blue-100 transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Book Appointment
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <span className="block py-3 text-lg font-semibold text-blue-200 px-4">Hello, {user?.username}!</span>
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left py-3 px-4 text-lg font-extrabold bg-red-500 text-white rounded-md text-center mt-4 shadow-md hover:bg-red-600 transition-colors duration-300"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/auth"
+              className="block w-full text-left py-3 px-4 text-lg font-extrabold bg-white text-blue-800 rounded-md text-center mt-4 shadow-md hover:bg-blue-100 transition-colors duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Login / Register
+            </Link>
+          )}
         </div>
       )}
     </header>

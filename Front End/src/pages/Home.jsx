@@ -1,99 +1,179 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png'; // Using the specific uploaded logo name
+// src/pages/Home.jsx
+import React, { useState, useEffect } from 'react';
 
-function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+function Home() {
+  // Define an array of slider content objects
+  const sliderContent = [
+    {
+      image: "https://via.placeholder.com/800x600/6A7EE8/FFFFFF?text=Slide+1%3A+Patient+Care", // Replace with your image 1
+      alt: "Dedicated Patient Care",
+      overlayTitle: "Dedicated Patient Care",
+      overlayDescription: "Our compassionate team puts your well-being first."
+    },
+    {
+      image: "https://via.placeholder.com/800x600/4CAF50/FFFFFF?text=Slide+2%3A+Modern+Facilities", // Replace with your image 2
+      alt: "State-of-the-Art Facilities",
+      overlayTitle: "Modern Facilities",
+      overlayDescription: "Equipped with advanced technology for precise treatment."
+    },
+    {
+      image: "https://via.placeholder.com/800x600/FF9800/FFFFFF?text=Slide+3%3A+Expert+Doctors", // Replace with your image 3
+      alt: "Experienced Medical Professionals",
+      overlayTitle: "Expert Medical Team",
+      overlayDescription: "Trust in our highly skilled and experienced doctors."
+    },
+    {
+      image: "https://via.placeholder.com/800x600/03A9F4/FFFFFF?text=Slide+4%3A+Preventive+Health", // Replace with your image 4
+      alt: "Focus on Preventive Health",
+      overlayTitle: "Preventive Wellness",
+      overlayDescription: "Proactive care to keep you healthy and strong."
+    },
+    {
+      image: "https://via.placeholder.com/800x600/9C27B0/FFFFFF?text=Slide+5%3A+Community+Wellbeing", // Replace with your image 5
+      alt: "Promoting Community Wellbeing",
+      overlayTitle: "Community Health",
+      overlayDescription: "Committed to fostering a healthier local community."
+    },
+    {
+      image: "https://via.placeholder.com/800x600/F44336/FFFFFF?text=Slide+6%3A+Holistic+Approach", // Replace with your image 6
+      alt: "Holistic Approach to Health",
+      overlayTitle: "Holistic Health Solutions",
+      overlayDescription: "Integrating mind, body, and spirit for complete well-being."
+    }
+  ];
+
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentSlideIndex((prevIndex) =>
+        (prevIndex + 1) % sliderContent.length
+      );
+    }, 5000); // Change slide every 5 seconds (adjust as needed)
+
+    return () => clearInterval(intervalId);
+  }, [sliderContent.length]);
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-xl sticky top-0 z-50 transition-all duration-300">
-      <nav className="max-w-[1200px] mx-auto flex items-center justify-between p-4 sm:p-6 lg:p-8">
-        {/* Logo and Brand Name */}
-        <div className="flex items-center space-x-3">
-          <Link to="/" className="flex items-center space-x-3 group">
-            <img
-              src={logo}
-              alt="Swastha Logo"
-              className="h-12 w-auto drop-shadow-lg transition-transform duration-300 group-hover:scale-105" // Larger logo, subtle shadow, hover scale
-            />
-            <span className="text-4xl font-extrabold text-white drop-shadow-md transition-colors duration-300 group-hover:text-blue-200"> {/* Larger text, shadow, hover color */}
-              Swastha
-            </span>
-          </Link>
-        </div>
+    // Main content wrapper:
+    <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 py-12">
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8 lg:space-x-12 items-center">
-          <Link
-            to="/"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            Home
-          </Link>
-          <Link
-            to="/about"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            About Us
-          </Link>
-          <Link
-            to="/services"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            Services
-          </Link>
-          <Link
-            to="/contact"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            Contact Us
-          </Link>
-          {/* Enhanced Book Appointment button */}
-          <Link
-            to="/appointment"
-            className="bg-white text-blue-800 font-extrabold py-3 px-8 rounded-full shadow-lg hover:bg-blue-100 hover:shadow-xl
-                       transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 border-blue-800"
-          >
-            Book Appointment
-          </Link>
-        </div>
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl p-10 sm:p-16 mb-24 shadow-2xl overflow-hidden
+                          md:flex md:items-center md:justify-between transform hover:scale-[1.005] transition-transform duration-500 ease-in-out">
+        {/* Decorative background shapes */}
+        <div className="absolute top-0 left-0 w-40 h-40 bg-white bg-opacity-15 rounded-full -translate-x-1/3 -translate-y-1/3"></div>
+        <div className="absolute bottom-0 right-0 w-60 h-60 bg-white bg-opacity-15 rounded-full translate-x-1/4 translate-y-1/4"></div>
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-white hover:text-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-md p-2"
-            aria-label="Toggle mobile menu"
-          >
-            <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
-            </svg>
+        <div className="relative z-10 text-center md:text-left md:w-1/2 md:pr-10">
+          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight mb-6">
+            Your Health, Our Priority.
+          </h1>
+          <p className="text-lg sm:text-xl leading-relaxed mb-8 opacity-95">
+            Compassionate care, innovative solutions, and a healthier future for you and your family.
+          </p>
+          <button className="bg-white text-blue-700 hover:bg-blue-800 hover:text-white
+                             font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
+                             transition-all duration-300 transform hover:scale-105 active:scale-100">
+            Book an Appointment
           </button>
         </div>
-      </nav>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-blue-700 shadow-xl py-4 px-6 absolute w-full z-40">
-          <Link to="/" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Home
-          </Link>
-          <Link to="/about" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            About Us
-          </Link>
-          <Link to="/services" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Services
-          </Link>
-          <Link to="/contact" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Contact Us
-          </Link>
-          <Link to="/appointment" className="block py-3 text-lg font-extrabold bg-white text-blue-800 rounded-md text-center mt-4 shadow-md hover:bg-blue-100 transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Book Appointment
-          </Link>
+        {/* --- Slider Integration (Image and Optional Overlay Content) --- */}
+        <div className="relative z-10 mt-10 md:mt-0 md:w-1/2 flex justify-center items-center min-h-[300px] sm:min-h-[400px] overflow-hidden rounded-xl">
+          {sliderContent.map((slide, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out
+                          ${index === currentSlideIndex ? 'opacity-100' : 'opacity-0'}`}
+              style={{ backgroundImage: `url(${slide.image})` }}
+              role="img"
+              aria-label={slide.alt}
+            >
+              {/* Overlay content directly on the image */}
+              {index === currentSlideIndex && (
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-end p-6 text-white transition-opacity duration-700 ease-in-out">
+                  <h3 className="text-2xl font-semibold mb-2 drop-shadow-lg">{slide.overlayTitle}</h3>
+                  <p className="text-sm leading-snug drop-shadow-md">{slide.overlayDescription}</p>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-      )}
-    </header>
+        {/* --- End Slider Integration --- */}
+
+      </section>
+
+      {/* About Us Section */}
+      <section className="bg-white p-12 rounded-xl shadow-lg mb-24 text-gray-800
+                          transform hover:scale-[1.005] transition-transform duration-500 ease-in-out">
+        <h2 className="text-3xl font-bold text-center text-blue-700 mb-10">About Swastha</h2>
+        <p className="text-lg leading-loose text-center max-w-3xl mx-auto">
+          At Swastha, we believe in a holistic approach to health. Our team of dedicated professionals is committed to providing personalized, high-quality care that addresses not just your symptoms, but your overall well-being. We combine cutting-edge medical technology with compassionate human touch to ensure you receive the best possible care.
+        </p>
+      </section>
+
+      {/* Our Services Section */}
+      <section className="mb-24">
+        <h2 className="text-3xl font-bold text-center text-blue-700 mb-12">Our Comprehensive Services</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">General Check-ups</h3>
+            <p className="text-gray-600 leading-normal">Regular health assessments to keep you on track.</p>
+          </div>
+          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Specialized Treatments</h3>
+            <p className="text-gray-600 leading-normal">Expert care for various medical conditions.</p>
+          </div>
+          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Preventive Care</h3>
+            <p className="text-gray-600 leading-normal">Programs designed to prevent illness and promote wellness.</p>
+          </div>
+          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Telehealth Consultations</h3>
+            <p className="text-gray-600 leading-normal">Convenient online medical advice and support.</p>
+          </div>
+          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Emergency Care</h3>
+            <p className="text-gray-600 leading-normal">Rapid response for urgent medical needs.</p>
+          </div>
+          <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Mental Health Support</h3>
+            <p className="text-gray-600 leading-normal">Confidential counseling and support services.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonial Section */}
+      <section className="bg-blue-100 p-12 rounded-xl shadow-lg mb-24 text-gray-800">
+        <h2 className="text-3xl font-bold text-center text-blue-700 mb-12">What Our Patients Say</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="bg-white p-10 rounded-xl shadow-md">
+            <p className="text-gray-700 italic mb-6 leading-loose">"The care I received at Swastha was exceptional. The staff are incredibly kind and the doctors are thorough and knowledgeable. Highly recommend!"</p>
+            <p className="font-semibold text-gray-900">- Jane Doe, Patient</p>
+          </div>
+          <div className="bg-white p-10 rounded-xl shadow-md">
+            <p className="text-gray-700 italic mb-6 leading-loose">"Swastha changed my perspective on healthcare. Their holistic approach truly made a difference in my recovery journey."</p>
+            <p className="font-semibold text-gray-900">- John Smith, Patient</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action / Contact Section */}
+      <section className="text-center bg-gradient-to-r from-green-500 to-green-700 text-white
+                          rounded-xl p-10 sm:p-16 shadow-xl transform hover:scale-[1.005] transition-transform duration-500 ease-in-out">
+        <h2 className="text-3xl sm:text-4xl font-bold mb-8">Ready to Take Control of Your Health?</h2>
+        <p className="text-lg sm:text-xl leading-relaxed mb-10 opacity-95">
+          Contact us today to schedule your consultation and begin your journey to a healthier you.
+        </p>
+        <button className="bg-white text-green-700 hover:bg-green-800 hover:text-white
+                           font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
+                           transition-all duration-300 transform hover:scale-105 active:scale-100">
+          Get in Touch
+        </button>
+      </section>
+    </div>
   );
 }
 
-export default Header;
+export default Home;
