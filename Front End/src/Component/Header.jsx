@@ -6,7 +6,7 @@ import { useUser, SignOutButton } from "@clerk/clerk-react"; // Assuming Clerk i
 
 import QRCode from "react-qr-code"; // Ensure react-qr-code is correctly installed: npm install react-qr-code or yarn add react-qr-code
 
-// Dummy Doctor Data
+// Dummy Doctor Data (remains the same)
 const dummyDoctors = [
   { id: "doc1", name: "Dr. Alice Smith", specialty: "General Physician" },
   { id: "doc2", name: "Dr. Bob Johnson", specialty: "Pediatrician" },
@@ -105,8 +105,6 @@ function Header() {
         </Link>
 
         {/* Search Bar (visible on desktop, takes full width on mobile) */}
-        {/* Adjusted order for better responsiveness: Search bar comes after logo on mobile,
-            but then aligns in the middle on desktop. */}
         <div className="relative w-full md:w-1/3 order-3 md:order-none md:flex-grow md:mx-4">
           <input
             type="text"
@@ -117,7 +115,6 @@ function Header() {
             onFocus={() =>
               searchQuery.length > 0 && setIsSearchDropdownOpen(true)
             }
-            // Use onMouseDown instead of onBlur for dropdown to prevent immediate closing
             onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
           />
           <svg
@@ -141,7 +138,7 @@ function Header() {
                 <button
                   key={doctor.id}
                   className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
-                  onMouseDown={() => handleDoctorSelect(doctor)} // Use onMouseDown to trigger before onBlur
+                  onMouseDown={() => handleDoctorSelect(doctor)}
                 >
                   <span className="font-semibold">{doctor.name}</span> -{" "}
                   <span className="text-sm text-gray-600">
@@ -161,7 +158,6 @@ function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        {/* Ensured proper ordering and spacing for desktop */}
         <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 order-2">
           <Link
             to="/"
@@ -216,7 +212,6 @@ function Header() {
                 >
                   AI Assistance
                 </Link>
-                
               </div>
             )}
           </div>
@@ -261,6 +256,22 @@ function Header() {
                     >
                       Show QR Code
                     </button>
+                    {/* New: View Insurance Details */}
+                    <Link
+                      to="/profile/insurance"
+                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                      onClick={closeAllOverlays} // Close all when navigating
+                    >
+                      View Insurance Details
+                    </Link>
+                    {/* New: View Medical Reports */}
+                    <Link
+                      to="/profile/medical-reports"
+                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                      onClick={closeAllOverlays} // Close all when navigating
+                    >
+                      View Medical Reports
+                    </Link>
                     <SignOutButton
                       signOutCallback={() => {
                         navigate("/auth");
@@ -323,8 +334,6 @@ function Header() {
       {/* Mobile Navigation (Conditional Rendering) */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white pb-4 shadow-lg border-t border-gray-100">
-          {" "}
-          {/* Added top border for separation */}
           <nav className="flex flex-col items-center space-y-4 pt-4">
             <Link
               to="/"
@@ -379,9 +388,8 @@ function Header() {
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
                     onClick={closeAllOverlays}
                   >
-                    AI Asistance
+                    AI Assistance
                   </Link>
-                  
                 </div>
               )}
             </div>
@@ -425,6 +433,22 @@ function Header() {
                       >
                         Show QR Code
                       </button>
+                      {/* New: View Insurance Details (Mobile) */}
+                      <Link
+                        to="/profile/insurance"
+                        className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                        onClick={closeAllOverlays}
+                      >
+                        View Insurance Details
+                      </Link>
+                      {/* New: View Medical Reports (Mobile) */}
+                      <Link
+                        to="/profile/medical-reports"
+                        className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                        onClick={closeAllOverlays}
+                      >
+                        View Medical Reports
+                      </Link>
                       <SignOutButton
                         signOutCallback={() => {
                           navigate("/auth");
