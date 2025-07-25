@@ -1,7 +1,7 @@
 // Frontend/src/pages/TelehealthConsultations.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-
+import Chat from "../Component/Chat.jsx"
 function TelehealthConsultations() {
   return (
     <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 py-12">
@@ -58,6 +58,7 @@ function TelehealthConsultations() {
           Book a Telehealth Consultation
         </Link>
       </section>
+      <Chat/>
     </div>
   );
 }

@@ -1,31 +1,48 @@
 // src/pages/Appointment.jsx
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
+import { useUser } from "@clerk/clerk-react"; // Import Clerk's useUser hook
 
 function Appointment() {
-  const { isLoggedIn, user } = useAuth();
+  const { isLoaded, isSignedIn, user } = useUser(); // Get auth state and user from Clerk
+  const navigate = useNavigate(); // For programmatic redirection
 
   const [formData, setFormData] = useState({
-    name: user ? user.username : '',
-    email: '',
-    phone: '',
-    date: '',
-    time: '',
-    reason: '',
-    doctor: ''
+    name: "", // Initialize as empty, will be set in useEffect
+    email: "", // Initialize as empty, will be set in useEffect
+    phone: "",
+    date: "",
+    time: "",
+    reason: "",
+    doctor: "",
   });
 
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
   const doctors = [
-    { id: 'general', name: 'General Physician' },
-    { id: 'pediatrician', name: 'Pediatrician' },
-    { id: 'dermatologist', name: 'Dermatologist' },
-    { id: 'cardiologist', name: 'Cardiologist' },
-    { id: 'physiotherapist', name: 'Physiotherapist' },
-    { id: 'other', name: 'Other / Not sure' }
+    { id: "general", name: "General Physician" },
+    { id: "pediatrician", name: "Pediatrician" },
+    { id: "dermatologist", name: "Dermatologist" },
+    { id: "cardiologist", name: "Cardiologist" },
+    { id: "physiotherapist", name: "Physiotherapist" },
+    { id: "other", name: "Other / Not sure" },
   ];
+
+  // Effect to handle user data and redirection
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      // If Clerk is loaded but user is not signed in, redirect to auth page
+      navigate("/auth");
+    } else if (isLoaded && isSignedIn && user) {
+      // If user is signed in, pre-fill name and email
+      setFormData((prevData) => ({
+        ...prevData,
+        // Clerk's user object has firstName, lastName, and emailAddresses array
+        name: user.fullName || user.username || "", // Use fullName, fallback to username
+        email: user.emailAddresses[0]?.emailAddress || "", // Use primary email
+      }));
+    }
+  }, [isLoaded, isSignedIn, user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,41 +56,84 @@ function Appointment() {
     e.preventDefault();
     setSubmissionStatus(null);
 
-    if (!formData.name || !formData.email || !formData.date || !formData.time || !formData.reason) {
-      setSubmissionStatus('error');
-      alert('Please fill in all required fields.');
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.date ||
+      !formData.time ||
+      !formData.reason
+    ) {
+      setSubmissionStatus("error");
+      alert("Please fill in all required fields.");
       return;
     }
 
-    console.log('Appointment Data Submitted:', formData);
-    console.log('Booked by:', user ? user.username : 'Guest');
+    console.log("Appointment Data Submitted:", formData);
+    console.log(
+      "Booked by:",
+      user
+        ? user.fullName || user.username || user.emailAddresses[0]?.emailAddress
+        : "Guest (Error)"
+    ); // More robust user info
 
     setTimeout(() => {
-      setSubmissionStatus('success');
+      setSubmissionStatus("success");
       setFormData({
-        name: user ? user.username : '',
-        email: '',
-        phone: '',
-        date: '',
-        time: '',
-        reason: '',
-        doctor: ''
+        name: user ? user.fullName || user.username || "" : "", // Reset name to logged-in user's name
+        email: user ? user.emailAddresses[0]?.emailAddress || "" : "", // Reset email to logged-in user's email
+        phone: "",
+        date: "",
+        time: "",
+        reason: "",
+        doctor: "",
       });
-      alert('Your appointment has been booked successfully!');
+      alert("Your appointment has been booked successfully!");
     }, 1000);
   };
 
-  if (!isLoggedIn) {
+  // Show a loading state while Clerk is loading
+  if (!isLoaded) {
     return (
       <div className="max-w-xl mx-auto px-6 sm:px-10 py-12 text-center">
         <section className="bg-white p-8 sm:p-12 rounded-xl shadow-lg text-gray-800">
-          <h2 className="text-3xl font-bold text-red-600 mb-6">Access Denied</h2>
+          <h2 className="text-3xl font-bold text-blue-600 mb-6">Loading...</h2>
+          <p className="text-lg leading-relaxed mb-6">
+            Checking authentication status. Please wait.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
+  // This check now relies on Clerk's isSignedIn status
+  if (!isSignedIn) {
+    // This block will theoretically not be reached if `useEffect` redirects quickly,
+    // but it's good as a fallback or if the redirect takes a moment.
+    return (
+      <div className="max-w-xl mx-auto px-6 sm:px-10 py-12 text-center">
+        <section className="bg-white p-8 sm:p-12 rounded-xl shadow-lg text-gray-800">
+          <h2 className="text-3xl font-bold text-red-600 mb-6">
+            Access Denied
+          </h2>
           <p className="text-lg leading-relaxed mb-6">
             You must be logged in to book an appointment.
           </p>
           <p className="text-lg leading-relaxed mb-8">
-            Please <Link to="/auth" className="text-blue-600 hover:underline font-semibold">Login</Link> or{' '}
-            <Link to="/auth" className="text-blue-600 hover:underline font-semibold">Create an Account</Link> to proceed.
+            Please{" "}
+            <Link
+              to="/auth"
+              className="text-blue-600 hover:underline font-semibold"
+            >
+              Login
+            </Link>{" "}
+            or{" "}
+            <Link
+              to="/auth"
+              className="text-blue-600 hover:underline font-semibold"
+            >
+              Create an Account
+            </Link>{" "}
+            to proceed.
           </p>
           <Link
             to="/auth"
@@ -90,14 +150,25 @@ function Appointment() {
   return (
     <div className="max-w-4xl mx-auto px-6 sm:px-10 lg:px-16 py-12">
       <section className="bg-white p-8 sm:p-12 rounded-xl shadow-lg mb-12 text-gray-800">
-        <h2 className="text-4xl font-extrabold text-center text-blue-700 mb-10">Book Your Appointment</h2>
+        <h2 className="text-4xl font-extrabold text-center text-blue-700 mb-10">
+          Book Your Appointment
+        </h2>
         <p className="text-lg leading-relaxed text-center max-w-3xl mx-auto mb-6 text-gray-700">
-          Welcome, <span className="font-semibold text-blue-600">{user?.username}</span>! Please fill out the form below to schedule your visit.
+          Welcome,{" "}
+          <span className="font-semibold text-blue-600">
+            {user?.fullName ||
+              user?.username ||
+              user?.emailAddresses[0]?.emailAddress}
+          </span>
+          ! Please fill out the form below to schedule your visit.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="name" className="block text-lg font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-lg font-medium text-gray-700 mb-2"
+            >
               Full Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -107,15 +178,18 @@ function Appointment() {
               value={formData.name}
               onChange={handleChange}
               required
-              readOnly={!!user}
+              readOnly={!!user} // Keep readOnly since it's pre-filled by Clerk
               className={`mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-lg
-                          ${user ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          ${user ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="John Doe"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-lg font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-lg font-medium text-gray-700 mb-2"
+            >
               Email Address <span className="text-red-500">*</span>
             </label>
             <input
@@ -125,13 +199,18 @@ function Appointment() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-lg"
+              readOnly={!!user} // Keep readOnly since it's pre-filled by Clerk
+              className={`mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-lg
+                          ${user ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="john.doe@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="phone" className="block text-lg font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="phone"
+              className="block text-lg font-medium text-gray-700 mb-2"
+            >
               Phone Number
             </label>
             <input
@@ -147,7 +226,10 @@ function Appointment() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="date" className="block text-lg font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="date"
+                className="block text-lg font-medium text-gray-700 mb-2"
+              >
                 Preferred Date <span className="text-red-500">*</span>
               </label>
               <input
@@ -161,7 +243,10 @@ function Appointment() {
               />
             </div>
             <div>
-              <label htmlFor="time" className="block text-lg font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="time"
+                className="block text-lg font-medium text-gray-700 mb-2"
+              >
                 Preferred Time <span className="text-red-500">*</span>
               </label>
               <input
@@ -177,7 +262,10 @@ function Appointment() {
           </div>
 
           <div>
-            <label htmlFor="doctor" className="block text-lg font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="doctor"
+              className="block text-lg font-medium text-gray-700 mb-2"
+            >
               Consult with (Optional)
             </label>
             <select
@@ -197,7 +285,10 @@ function Appointment() {
           </div>
 
           <div>
-            <label htmlFor="reason" className="block text-lg font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="reason"
+              className="block text-lg font-medium text-gray-700 mb-2"
+            >
               Reason for Appointment <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -212,16 +303,27 @@ function Appointment() {
             ></textarea>
           </div>
 
-          {submissionStatus === 'success' && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+          {submissionStatus === "success" && (
+            <div
+              className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
               <strong className="font-bold">Success!</strong>
-              <span className="block sm:inline ml-2">Your appointment request has been sent. We will contact you shortly.</span>
+              <span className="block sm:inline ml-2">
+                Your appointment request has been sent. We will contact you
+                shortly.
+              </span>
             </div>
           )}
-          {submissionStatus === 'error' && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          {submissionStatus === "error" && (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
               <strong className="font-bold">Error!</strong>
-              <span className="block sm:inline ml-2">Please correct the errors and try again.</span>
+              <span className="block sm:inline ml-2">
+                Please correct the errors and try again.
+              </span>
             </div>
           )}
 
@@ -229,7 +331,7 @@ function Appointment() {
             <button
               type="submit"
               className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-blue-700
-                         transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Confirm Appointment
             </button>
