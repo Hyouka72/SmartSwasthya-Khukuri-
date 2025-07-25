@@ -5,6 +5,7 @@ import hospital1 from '../assets/hospital1.jpg';
 import hospital2 from "../assets/hospital2.jpeg";
 import hospital3 from "../assets/hospital3.jpg";
 import Chat from "../Component/Chat.jsx"
+
 function Home() {
   // Define an array of slider content objects
   const sliderContent = [
@@ -47,6 +48,8 @@ function Home() {
   ];
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  // Add state for controlling chat visibility
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -57,6 +60,18 @@ function Home() {
 
     return () => clearInterval(intervalId);
   }, [sliderContent.length]);
+
+  // Function to handle AI assistance click
+  const handleAIAssistantClick = () => {
+    setIsChatOpen(true);
+    // Scroll to bottom to show the chat
+    setTimeout(() => {
+      window.scrollTo({ 
+        top: document.body.scrollHeight, 
+        behavior: 'smooth' 
+      });
+    }, 100);
+  };
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 py-16">
@@ -132,10 +147,14 @@ function Home() {
             <p className="text-gray-600 leading-normal">Programs designed to prevent illness and promote wellness.</p>
           </Link>
 
-          <Link to="/services/telehealth-consultations" className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 w-full max-w-sm">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Asistance</h3>
+          {/* Modified AI Assistance card to open chat instead of navigating */}
+          <div 
+            onClick={handleAIAssistantClick}
+            className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 w-full max-w-sm cursor-pointer"
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Assistance</h3>
             <p className="text-gray-600 leading-normal">Convenient online medical advice and support.</p>
-          </Link>
+          </div>
         </div>
       </section>
 
@@ -167,7 +186,9 @@ function Home() {
           Get in Touch
         </button>
       </section>
-      <Chat/>
+      
+      {/* Modified Chat component with controlled visibility */}
+      <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }

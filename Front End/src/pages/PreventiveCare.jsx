@@ -130,7 +130,7 @@ function PreventiveCare() {
         {/* Animated background elements */}
         <div className="absolute top-0 left-0 w-32 h-32 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
         <div className="absolute bottom-0 right-0 w-40 h-40 bg-white bg-opacity-10 rounded-full animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white bg-opacity-5 rounded-full animate-bounce"></div>
+        
         
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-6xl font-extrabold leading-tight mb-4 animate-fade-in">
