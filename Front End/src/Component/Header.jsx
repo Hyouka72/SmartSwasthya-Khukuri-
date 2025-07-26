@@ -1,97 +1,494 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo[1].png'; // Using the specific uploaded logo name
+// Frontend/src/Component/Header.jsx
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useUser, SignInButton, UserButton } from '@clerk/clerk-react';
+import Logo from './Logo'; // Import the Logo component
 
 function Header() {
+  const { isSignedIn, user } = useUser();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
+  const [isPatientPortalOpen, setIsPatientPortalOpen] = useState(false);
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  const isServicesActive = () => {
+    return location.pathname.startsWith('/services');
+  };
+
+  const isPatientPortalActive = () => {
+    return location.pathname === '/insurance-details' || location.pathname === '/medical-reports' || location.pathname === '/patient-qr';
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    setIsServicesDropdownOpen(false);
+    setIsPatientPortalOpen(false);
+  };
+
+  // Handle clicking outside dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close dropdowns when clicking outside
+      if (!event.target.closest('.dropdown-container')) {
+        setIsServicesDropdownOpen(false);
+        setIsPatientPortalOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleServicesDropdown = () => {
+    setIsServicesDropdownOpen(!isServicesDropdownOpen);
+    setIsPatientPortalOpen(false); // Close other dropdown
+  };
+
+  const togglePatientPortalDropdown = () => {
+    setIsPatientPortalOpen(!isPatientPortalOpen);
+    setIsServicesDropdownOpen(false); // Close other dropdown
+  };
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-xl sticky top-0 z-50 transition-all duration-300">
-      <nav className="max-w-[1200px] mx-auto flex items-center justify-between p-4 sm:p-6 lg:p-8">
-        {/* Logo and Brand Name */}
-        <div className="flex items-center space-x-3">
-          <Link to="/" className="flex items-center space-x-3 group">
-            <img
-              src={logo}
-              alt="Swastha Logo"
-              className="h-12 w-auto drop-shadow-lg transition-transform duration-300 group-hover:scale-105" // Larger logo, subtle shadow, hover scale
-            />
-            <span className="text-4xl font-extrabold text-white drop-shadow-md transition-colors duration-300 group-hover:text-blue-200"> {/* Larger text, shadow, hover color */}
-              Swastha
-            </span>
-          </Link>
+    <header className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Logo size="default" showText={true} className="hover:opacity-90 transition-opacity duration-200" />
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link
+              to="/"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                isActive('/') 
+                  ? 'text-blue-600 bg-blue-50' 
+                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+              }`}
+            >
+              Home
+            </Link>
+
+            {/* Services Dropdown */}
+            <div className="relative dropdown-container">
+              <button
+                onClick={toggleServicesDropdown}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center ${
+                  isServicesActive() 
+                    ? 'text-blue-600 bg-blue-50' 
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+              >
+                Services
+                <svg className={`ml-1 h-4 w-4 transform transition-transform duration-200 ${
+                  isServicesDropdownOpen ? 'rotate-180' : ''
+                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Services Dropdown Menu */}
+              {isServicesDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                  <div className="py-1">
+                    <Link
+                      to="/services/general-checkups"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                      onClick={() => {
+                        setIsServicesDropdownOpen(false);
+                        closeMobileMenu();
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <svg className="mr-3 h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        General Check-ups
+                      </div>
+                    </Link>
+                    <Link
+                      to="/services/preventive-care"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                      onClick={() => {
+                        setIsServicesDropdownOpen(false);
+                        closeMobileMenu();
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <svg className="mr-3 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        Preventive Care
+                      </div>
+                    </Link>
+                    <Link
+                      to="/services/telehealth-consultations"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                      onClick={() => {
+                        setIsServicesDropdownOpen(false);
+                        closeMobileMenu();
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <svg className="mr-3 h-4 w-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        AI Assistant
+                      </div>
+                    </Link>
+                    <Link
+                      to="/services/emergency-care"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                      onClick={() => {
+                        setIsServicesDropdownOpen(false);
+                        closeMobileMenu();
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <svg className="mr-3 h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        Emergency Care
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link
+              to="/appointment"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                isActive('/appointment') 
+                  ? 'text-blue-600 bg-blue-50' 
+                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+              }`}
+            >
+              Appointment
+            </Link>
+
+            {/* Patient Portal Dropdown - Only show if signed in */}
+            {isSignedIn && (
+              <div className="relative dropdown-container">
+                <button
+                  onClick={togglePatientPortalDropdown}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center ${
+                    isPatientPortalActive() 
+                      ? 'text-blue-600 bg-blue-50' 
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Patient Portal
+                  <svg className={`ml-1 h-4 w-4 transform transition-transform duration-200 ${
+                    isPatientPortalOpen ? 'rotate-180' : ''
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Patient Portal Dropdown Menu */}
+                {isPatientPortalOpen && (
+                  <div className="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                    <div className="py-1">
+                      <Link
+                        to="/medical-reports"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                        onClick={() => {
+                          setIsPatientPortalOpen(false);
+                          closeMobileMenu();
+                        }}
+                      >
+                        <div className="flex items-center">
+                          <svg className="mr-3 h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Medical Reports
+                        </div>
+                      </Link>
+                      <Link
+                        to="/insurance-details"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                        onClick={() => {
+                          setIsPatientPortalOpen(false);
+                          closeMobileMenu();
+                        }}
+                      >
+                        <div className="flex items-center">
+                          <svg className="mr-3 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          Insurance Details
+                        </div>
+                      </Link>
+                      <Link
+                        to="/patient-qr"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                        onClick={() => {
+                          setIsPatientPortalOpen(false);
+                          closeMobileMenu();
+                        }}
+                      >
+                        <div className="flex items-center">
+                          <svg className="mr-3 h-4 w-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                          </svg>
+                          My QR Code
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Link
+              to="/about"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                isActive('/about') 
+                  ? 'text-blue-600 bg-blue-50' 
+                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+              }`}
+            >
+              About
+            </Link>
+
+            <Link
+              to="/contact"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                isActive('/contact') 
+                  ? 'text-blue-600 bg-blue-50' 
+                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+              }`}
+            >
+              Contact
+            </Link>
+          </nav>
+
+          {/* User Authentication */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isSignedIn ? (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-700">
+                  Welcome, {user?.firstName}
+                </span>
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      avatarBox: "h-8 w-8"
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <SignInButton mode="modal">
+                <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors duration-200">
+                  Sign In
+                </button>
+              </SignInButton>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={toggleMobileMenu}
+              className="bg-gray-200 inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+            >
+              <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8 lg:space-x-12 items-center">
-          <Link
-            to="/"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            Home
-          </Link>
-          <Link
-            to="/about"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            About Us
-          </Link>
-          <Link
-            to="/services"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            Services
-          </Link>
-          <Link
-            to="/contact"
-            className="text-lg font-semibold text-white hover:text-blue-200 transition-colors duration-300 py-2 px-3 rounded-md"
-          >
-            Contact Us
-          </Link>
-          {/* Enhanced Book Appointment button */}
-          <Link
-            to="/appointment"
-            className="bg-white text-blue-800 font-extrabold py-3 px-8 rounded-full shadow-lg hover:bg-blue-100 hover:shadow-xl
-                       transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 border-blue-800"
-          >
-            Book Appointment
-          </Link>
-        </div>
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+              <Link
+                to="/"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                  isActive('/') 
+                    ? 'text-blue-600 bg-blue-50' 
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+                onClick={closeMobileMenu}
+              >
+                Home
+              </Link>
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-white hover:text-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-md p-2"
-            aria-label="Toggle mobile menu"
-          >
-            <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
-            </svg>
-          </button>
-        </div>
-      </nav>
+              {/* Mobile Services Section */}
+              <div>
+                <button
+                  onClick={() => setIsServicesDropdownOpen(!isServicesDropdownOpen)}
+                  className={`w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center justify-between ${
+                    isServicesActive() 
+                      ? 'text-blue-600 bg-blue-50' 
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Services
+                  <svg className={`h-4 w-4 transform transition-transform ${isServicesDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isServicesDropdownOpen && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    <Link
+                      to="/services/general-checkups"
+                      className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                      onClick={closeMobileMenu}
+                    >
+                      General Check-ups
+                    </Link>
+                    <Link
+                      to="/services/preventive-care"
+                      className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                      onClick={closeMobileMenu}
+                    >
+                      Preventive Care
+                    </Link>
+                    <Link
+                      to="/services/telehealth-consultations"
+                      className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                      onClick={closeMobileMenu}
+                    >
+                      AI Assistant
+                    </Link>
+                    <Link
+                      to="/services/emergency-care"
+                      className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                      onClick={closeMobileMenu}
+                    >
+                      Emergency Care
+                    </Link>
+                  </div>
+                )}
+              </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-blue-700 shadow-xl py-4 px-6 absolute w-full z-40">
-          <Link to="/" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Home
-          </Link>
-          <Link to="/about" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            About Us
-          </Link>
-          <Link to="/services" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Services
-          </Link>
-          <Link to="/contact" className="block py-3 text-lg font-semibold text-white hover:bg-blue-600 rounded-md transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Contact Us
-          </Link>
-          <Link to="/appointment" className="block py-3 text-lg font-extrabold bg-white text-blue-800 rounded-md text-center mt-4 shadow-md hover:bg-blue-100 transition-colors duration-300 px-4" onClick={() => setIsMobileMenuOpen(false)}>
-            Book Appointment
-          </Link>
-        </div>
-      )}
+              <Link
+                to="/appointment"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                  isActive('/appointment') 
+                    ? 'text-blue-600 bg-blue-50' 
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+                onClick={closeMobileMenu}
+              >
+                Appointment
+              </Link>
+
+              {/* Mobile Patient Portal - Only show if signed in */}
+              {isSignedIn && (
+                <div>
+                  <button
+                    onClick={() => setIsPatientPortalOpen(!isPatientPortalOpen)}
+                    className={`w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center justify-between ${
+                      isPatientPortalActive() 
+                        ? 'text-blue-600 bg-blue-50' 
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Patient Portal
+                    <svg className={`h-4 w-4 transform transition-transform ${isPatientPortalOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {isPatientPortalOpen && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      <Link
+                        to="/medical-reports"
+                        className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                        onClick={closeMobileMenu}
+                      >
+                        Medical Reports
+                      </Link>
+                      <Link
+                        to="/insurance-details"
+                        className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                        onClick={closeMobileMenu}
+                      >
+                        Insurance Details
+                      </Link>
+                      <Link
+                        to="/patient-qr"
+                        className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                        onClick={closeMobileMenu}
+                      >
+                        My QR Code
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <Link
+                to="/about"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                  isActive('/about') 
+                    ? 'text-blue-600 bg-blue-50' 
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+                onClick={closeMobileMenu}
+              >
+                About
+              </Link>
+
+              <Link
+                to="/contact"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                  isActive('/contact') 
+                    ? 'text-blue-600 bg-blue-50' 
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+                onClick={closeMobileMenu}
+              >
+                Contact
+              </Link>
+
+              {/* Mobile Authentication */}
+              <div className="pt-4 border-t border-gray-200">
+                {isSignedIn ? (
+                  <div className="flex items-center space-x-3 px-3 py-2">
+                    <UserButton 
+                      appearance={{
+                        elements: {
+                          avatarBox: "h-8 w-8"
+                        }
+                      }}
+                    />
+                    <span className="text-sm text-gray-700">
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                  </div>
+                ) : (
+                  <SignInButton mode="modal">
+                    <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors duration-200 mx-3">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

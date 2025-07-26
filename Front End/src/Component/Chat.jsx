@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
+import hospital1 from "../assets/hospital1.jpg";
+import hospital2 from "../assets/hospital2.jpeg";
+import hospital3 from "../assets/hospital3.jpg";
 
-function Chat() {
-  // State to control the visibility of the chat window
-  const [isChatOpen, setIsChatOpen] = useState(false);
+function Chat({ isOpen: propIsOpen, onClose }) {
+  // Use prop for initial state if provided, otherwise use internal state
+  const [isChatOpen, setIsChatOpen] = useState(propIsOpen || false);
   // State to store chat messages
   const [messages, setMessages] = useState([]);
   // State for the text input field
@@ -18,9 +21,22 @@ function Chat() {
   // Ref for the hidden file input element
   const fileInputRef = useRef(null);
 
+  // Update internal state when prop changes
+  useEffect(() => {
+    if (propIsOpen !== undefined) {
+      setIsChatOpen(propIsOpen);
+    }
+  }, [propIsOpen]);
+
   // Function to toggle the chat window's visibility
   const toggleChat = () => {
-    setIsChatOpen(!isChatOpen);
+    const newState = !isChatOpen;
+    setIsChatOpen(newState);
+    
+    // Call onClose prop if provided and chat is being closed
+    if (!newState && onClose) {
+      onClose();
+    }
   };
 
   // Function to scroll the message area to the bottom
@@ -83,74 +99,27 @@ function Chat() {
     setSelectedImage(null);
     setImagePreviewUrl(null);
 
-    let aiResponseText = "";
-    const isTextOnly = inputText.trim() && !selectedImage;
-    const isImageOnly = !inputText.trim() && selectedImage;
-    const isTextAndImage = inputText.trim() && selectedImage;
+    // Simulate AI typing with a random delay
+    const typingDelay = Math.random() * 1500 + 500; // Random delay between 500ms and 2000ms
 
-    if (isTextOnly) {
-      aiResponseText = "You sent a text message! How can I help you with that?";
-    } else if (isImageOnly) {
-      aiResponseText =
-        "Thanks for sending an image! What would you like to know about it?";
-    } else if (isTextAndImage) {
-      aiResponseText =
-        "I received both your text and an image! Let's analyze them together.";
-    }
+    setTimeout(async () => {
+      let aiResponseText = "";
+      const isTextOnly = inputText.trim() && !selectedImage;
+      const isImageOnly = !inputText.trim() && selectedImage;
+      const isTextAndImage = inputText.trim() && selectedImage;
 
-    // If a predefined response is determined, directly add it and bypass the API call
-    if (aiResponseText) {
-      const newAiMessage = {
-        id: Date.now() + 1,
-        sender: "ai",
-        text: aiResponseText,
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      setMessages((prevMessages) => [...prevMessages, newAiMessage]);
-      setIsLoading(false); // Hide loading indicator
-      return; // Exit the function after sending predefined message
-    }
+      if (isTextOnly) {
+        aiResponseText = "Hi! I'm your AI health assistant. How can I help you today?";
+      } else if (isImageOnly) {
+        aiResponseText =
+          "Thanks for sending an image! What would you like to know about it?";
+      } else if (isTextAndImage) {
+        aiResponseText =
+          "I received both your text and an image! Let's analyze them together.";
+      }
 
-    // --- Original Gemini API call logic (will only run if no predefined message is set) ---
-    let chatHistory = [];
-    let parts = [];
-
-    if (inputText.trim()) {
-      parts.push({ text: inputText.trim() });
-    }
-    if (imagePreviewUrl) {
-      const base64ImageData = imagePreviewUrl.split(",")[1];
-      parts.push({
-        inlineData: {
-          mimeType: selectedImage.type || "image/png",
-          data: base64ImageData,
-        },
-      });
-    }
-
-    chatHistory.push({ role: "user", parts: parts });
-
-    const payload = { contents: chatHistory };
-    const apiKey = "";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-    try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (
-        result.candidates &&
-        result.candidates.length > 0 &&
-        result.candidates[0].content &&
-        result.candidates[0].content.parts &&
-        result.candidates[0].content.parts.length > 0
-      ) {
-        aiResponseText = result.candidates[0].content.parts[0].text;
+      // If a predefined response is determined, directly add it and bypass the API call
+      if (aiResponseText) {
         const newAiMessage = {
           id: Date.now() + 1,
           sender: "ai",
@@ -158,32 +127,84 @@ function Chat() {
           timestamp: new Date().toLocaleTimeString(),
         };
         setMessages((prevMessages) => [...prevMessages, newAiMessage]);
-      } else {
-        console.error("Gemini API response structure unexpected:", result);
+        setIsLoading(false); // Hide loading indicator
+        return; // Exit the function after sending predefined message
+      }
+
+      // --- Original Gemini API call logic (will only run if no predefined message is set) ---
+      let chatHistory = [];
+      let parts = [];
+
+      if (inputText.trim()) {
+        parts.push({ text: inputText.trim() });
+      }
+      if (imagePreviewUrl) {
+        const base64ImageData = imagePreviewUrl.split(",")[1];
+        parts.push({
+          inlineData: {
+            mimeType: selectedImage.type || "image/png",
+            data: base64ImageData,
+          },
+        });
+      }
+
+      chatHistory.push({ role: "user", parts: parts });
+
+      const payload = { contents: chatHistory };
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (
+          result.candidates &&
+          result.candidates.length > 0 &&
+          result.candidates[0].content &&
+          result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0
+        ) {
+          aiResponseText = result.candidates[0].content.parts[0].text;
+          const newAiMessage = {
+            id: Date.now() + 1,
+            sender: "ai",
+            text: aiResponseText,
+            timestamp: new Date().toLocaleTimeString(),
+          };
+          setMessages((prevMessages) => [...prevMessages, newAiMessage]);
+        } else {
+          console.error("Gemini API response structure unexpected:", result);
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: Date.now() + 1,
+              sender: "ai",
+              text: "Sorry, I couldn't get a response from the AI.",
+              timestamp: new Date().toLocaleTimeString(),
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error calling Gemini API:", error);
         setMessages((prevMessages) => [
           ...prevMessages,
           {
             id: Date.now() + 1,
             sender: "ai",
-            text: "Sorry, I couldn't get a response from the AI.",
+            text: "An error occurred while communicating with the AI.",
             timestamp: new Date().toLocaleTimeString(),
           },
         ]);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error calling Gemini API:", error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          id: Date.now() + 1,
-          sender: "ai",
-          text: "An error occurred while communicating with the AI.",
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
+    }, typingDelay); // Apply the random delay here
   };
 
   return (
@@ -215,13 +236,6 @@ function Chat() {
           }
         `}
       </style>
-
-      {/* Main content of the page (placeholder) */}
-      <div className="flex items-center justify-center h-full">
-        <h1 className="text-4xl font-bold text-gray-700">
-          Welcome to the Page!
-        </h1>
-      </div>
 
       {/* Floating Chat Button */}
       <button
@@ -269,7 +283,7 @@ function Chat() {
         <div className="fixed bottom-24 right-8 w-80 md:w-96 h-[600px] bg-white rounded-lg shadow-xl flex flex-col z-50 overflow-hidden border border-gray-200">
           {/* Chat Header */}
           <div className="flex items-center justify-between p-4 bg-blue-600 text-white rounded-t-lg shadow-md">
-            <h3 className="text-lg font-semibold">AI Chat</h3>
+            <h3 className="text-lg font-semibold">AI Health Assistant</h3>
             <button
               onClick={toggleChat}
               className="p-1 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
@@ -296,7 +310,13 @@ function Chat() {
           <div className="flex-1 p-4 overflow-y-auto custom-scrollbar bg-gray-50">
             {messages.length === 0 && (
               <div className="text-center text-gray-500 mt-10">
-                Start a conversation!
+                <div className="mb-4">
+                  <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </div>
+                <p className="text-lg font-medium">Welcome to AI Health Assistant!</p>
+                <p className="text-sm mt-2">Start a conversation by typing a message or uploading an image.</p>
               </div>
             )}
             {messages.map((msg) => (
