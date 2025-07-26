@@ -1,6 +1,7 @@
 package com.backend.SmartSwasthya.Models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,6 +42,7 @@ public class DoctorAvailability {
 
     // An availability slot can be linked to one appointment once it's booked
     @OneToOne(mappedBy = "availableSlot", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private Appointment bookedAppointment;
 
     // You might also add a 'duration' or 'slotSize' if times are fixed (e.g., 30 min, 1 hr)

@@ -1,6 +1,7 @@
 package com.backend.SmartSwasthya.Models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -40,11 +41,13 @@ public class Doctor {
 
     // One doctor can have many availabilities
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     @JsonManagedReference("doctor-availabilities")
     private List<DoctorAvailability> availabilities;
 
     // One doctor can have many appointments booked with them
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     @JsonManagedReference("doctor-appointments")
     private List<Appointment> appointments;
 }

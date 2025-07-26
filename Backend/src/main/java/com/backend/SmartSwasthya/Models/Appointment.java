@@ -1,6 +1,7 @@
 package com.backend.SmartSwasthya.Models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,6 +48,7 @@ public class Appointment {
 
     // Link to the specific DoctorAvailability slot that was booked
     @OneToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "available_slot_id", unique = true, nullable = false) // Each slot can only be used once
     private DoctorAvailability availableSlot;
 
