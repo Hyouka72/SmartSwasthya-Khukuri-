@@ -24,7 +24,7 @@ import {
   Thermometer,
   QrCode,
 } from "lucide-react";
-import { QrReader } from "react-qr-reader"; // Import the QR code reader component
+import  QrReader  from "react-qr-reader"; // Import the QR code reader component
 
 // Mock data for demonstration
 const mockAppointments = [
