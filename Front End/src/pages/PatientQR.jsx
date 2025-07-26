@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import QRCode from "react-qr-code"; // Correct import for QRCode
+import QRCode from "react-qr-code";
 
 function PatientQR() {
   const { user } = useUser();
   const [qrCodeData, setQrCodeData] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Generate QR code data based on patient information
+  // Generate QR code data based on essential patient information
   useEffect(() => {
     if (user) {
-      const patientData = {
+      const simplifiedPatientData = {
         patientId: user.id,
-        name: `${user.firstName} ${user.lastName}`,
-        email: user.primaryEmailAddress?.emailAddress,
-        phone: user.primaryPhoneNumber?.phoneNumber || "Not provided",
         memberNumber: `SW${user.id.slice(-8).toUpperCase()}`,
-        dateGenerated: new Date().toISOString(),
-        validUntil: new Date(
-          Date.now() + 30 * 24 * 60 * 60 * 1000
-        ).toISOString(), // Valid for 30 days
+        // You can add a timestamp if you need to invalidate older QRs,
+        // but for a simpler QR, we can omit it if not strictly required
+        // dateGenerated: new Date().toISOString(),
       };
-      setQrCodeData(JSON.stringify(patientData));
+      setQrCodeData(JSON.stringify(simplifiedPatientData));
     }
   }, [user]);
 
@@ -31,18 +27,12 @@ function PatientQR() {
     setIsGenerating(true);
     setTimeout(() => {
       if (user) {
-        const patientData = {
+        const simplifiedPatientData = {
           patientId: user.id,
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.primaryEmailAddress?.emailAddress,
-          phone: user.primaryPhoneNumber?.phoneNumber || "Not provided",
           memberNumber: `SW${user.id.slice(-8).toUpperCase()}`,
-          dateGenerated: new Date().toISOString(),
-          validUntil: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000
-          ).toISOString(),
+          // dateGenerated: new Date().toISOString(), // Omit if not needed for simpler QR
         };
-        setQrCodeData(JSON.stringify(patientData));
+        setQrCodeData(JSON.stringify(simplifiedPatientData));
       }
       setIsGenerating(false);
     }, 1500);
@@ -50,31 +40,7 @@ function PatientQR() {
 
   // Download QR code (placeholder function)
   const downloadQR = () => {
-    // Instead of alert, we'll use a simple console log for demonstration
-    // In a real app, you would implement actual download logic here,
-    // for example, converting the SVG from the QR code to an image.
     console.log("QR Code download feature would be implemented here");
-    // Example of how you might trigger a download (requires a ref to the QRCode component)
-    // const svg = document.getElementById("qr-code-svg");
-    // if (svg) {
-    //   const svgData = new XMLSerializer().serializeToString(svg);
-    //   const canvas = document.createElement("canvas");
-    //   const ctx = canvas.getContext("2d");
-    //   const img = new Image();
-    //   img.onload = () => {
-    //     canvas.width = img.width;
-    //     canvas.height = img.height;
-    //     ctx.drawImage(img, 0, 0);
-    //     const pngFile = canvas.toDataURL("image/png");
-    //     const downloadLink = document.createElement("a");
-    //     downloadLink.href = pngFile;
-    //     downloadLink.download = "patient-qr-code.png";
-    //     document.body.appendChild(downloadLink);
-    //     downloadLink.click();
-    //     document.body.removeChild(downloadLink);
-    //   };
-    //   img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
-    // }
   };
 
   // Share QR code (placeholder function)
@@ -83,10 +49,8 @@ function PatientQR() {
       navigator.share({
         title: "My Swastha Patient QR Code",
         text: "Here is my patient QR code for Swastha Healthcare",
-        // You might also include a URL or file if the QR code can be accessed online or downloaded
       });
     } else {
-      // Fallback for browsers that do not support the Web Share API
       console.log(
         "Sharing feature would be implemented here (Web Share API not supported)"
       );
@@ -162,7 +126,7 @@ function PatientQR() {
                         id="qr-code-svg" // ID for potential download functionality
                         value={qrCodeData}
                         size={192} // 48 * 4, to fit the 48x48 container
-                        level={"H"} // High error correction level
+                        level={"M"} // Medium error correction level for simpler QR
                         bgColor="#FFFFFF"
                         fgColor="#000000"
                         viewBox={`0 0 192 192`}
