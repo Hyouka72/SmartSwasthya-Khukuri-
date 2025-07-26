@@ -1,221 +1,202 @@
 import React, { useState, useRef, useEffect } from "react";
-import hospital1 from "../assets/hospital1.jpg";
-import hospital2 from "../assets/hospital2.jpeg";
-import hospital3 from "../assets/hospital3.jpg";
 
 function Chat({ isOpen: propIsOpen, onClose }) {
-  // Use prop for initial state if provided, otherwise use internal state
   const [isChatOpen, setIsChatOpen] = useState(propIsOpen || false);
-  // State to store chat messages
   const [messages, setMessages] = useState([]);
-  // State for the text input field
   const [inputText, setInputText] = useState("");
-  // State to store the selected image file object
   const [selectedImage, setSelectedImage] = useState(null);
-  // State to store the base64 URL of the image for preview
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
-  // State to indicate if the AI is currently processing a response
   const [isLoading, setIsLoading] = useState(false);
-  // Ref for scrolling to the bottom of the messages area
   const messagesEndRef = useRef(null);
-  // Ref for the hidden file input element
   const fileInputRef = useRef(null);
 
-  // Update internal state when prop changes
+  // Retrieve API key from environment variables (client-side access)
+  // WARNING: Exposing API keys in frontend code is a security risk.
+  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
   useEffect(() => {
     if (propIsOpen !== undefined) {
       setIsChatOpen(propIsOpen);
     }
   }, [propIsOpen]);
 
-  // Function to toggle the chat window's visibility
   const toggleChat = () => {
     const newState = !isChatOpen;
     setIsChatOpen(newState);
-    
-    // Call onClose prop if provided and chat is being closed
     if (!newState && onClose) {
       onClose();
     }
+    // Optionally clear messages when chat is closed, if "no history" implies session-based history.
+    // If "no history" means no previous context for AI, but display messages for current open session is fine,
+    // then no need to clear here. For this implementation, we keep messages for the current open session.
   };
 
-  // Function to scroll the message area to the bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Effect hook to scroll to the bottom whenever messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Handler for image file selection
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedImage(file); // Store the file object
+      setSelectedImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreviewUrl(reader.result); // Store base64 for preview
+        setImagePreviewUrl(reader.result);
       };
-      reader.readAsDataURL(file); // Read file as Data URL
+      reader.readAsDataURL(file);
     } else {
       setSelectedImage(null);
       setImagePreviewUrl(null);
     }
   };
 
-  // Function to clear the selected image
   const clearImage = () => {
     setSelectedImage(null);
     setImagePreviewUrl(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Clear the file input element's value
+      fileInputRef.current.value = "";
     }
   };
 
-  // Handler for sending messages (text, image, or both)
   const handleSendMessage = async () => {
-    // Prevent sending empty messages
     if (!inputText.trim() && !selectedImage) {
       return;
     }
-
-    setIsLoading(true); // Show loading indicator
-
-    // Create a new user message object
-    const newUserMessage = {
-      id: Date.now(), // Unique ID for the message
-      sender: "user",
-      text: inputText.trim() || undefined, // Text content, or undefined if empty
-      imageUrl: imagePreviewUrl || undefined, // Image URL, or undefined if no image
-      timestamp: new Date().toLocaleTimeString(), // Current time for timestamp
-    };
-
-    // Add the new user message to the chat history
-    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
-    // Clear input fields after sending
-    setInputText("");
-    setSelectedImage(null);
-    setImagePreviewUrl(null);
-
-    // Simulate AI typing with a random delay
-    const typingDelay = Math.random() * 1500 + 500; // Random delay between 500ms and 2000ms
-
-    setTimeout(async () => {
-      let aiResponseText = "";
-      const isTextOnly = inputText.trim() && !selectedImage;
-      const isImageOnly = !inputText.trim() && selectedImage;
-      const isTextAndImage = inputText.trim() && selectedImage;
-
-      if (isTextOnly) {
-        aiResponseText = "Hi! I'm your AI health assistant. How can I help you today?";
-      } else if (isImageOnly) {
-        aiResponseText =
-          "Thanks for sending an image! What would you like to know about it?";
-      } else if (isTextAndImage) {
-        aiResponseText =
-          "I received both your text and an image! Let's analyze them together.";
-      }
-
-      // If a predefined response is determined, directly add it and bypass the API call
-      if (aiResponseText) {
-        const newAiMessage = {
+    if (!API_KEY) {
+      // Using a custom message box instead of alert() as per instructions
+      // For a real app, you'd implement a proper modal or toast notification
+      const errorMessage =
+        "API Key is missing! Please set VITE_GEMINI_API_KEY in your .env file.";
+      console.error(errorMessage);
+      // You could update a state variable to show this message in the UI
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
           id: Date.now() + 1,
           sender: "ai",
-          text: aiResponseText,
-          timestamp: new Date().toLocaleTimeString(),
-        };
-        setMessages((prevMessages) => [...prevMessages, newAiMessage]);
-        setIsLoading(false); // Hide loading indicator
-        return; // Exit the function after sending predefined message
-      }
+          text: errorMessage,
+          timestamp: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+      return;
+    }
 
-      // --- Original Gemini API call logic (will only run if no predefined message is set) ---
-      let chatHistory = [];
+    setIsLoading(true);
+
+    const newUserMessage = {
+      id: Date.now(),
+      sender: "user",
+      text: inputText.trim() || undefined,
+      imageUrl: imagePreviewUrl || undefined,
+      timestamp: new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
+    setInputText("");
+    clearImage(); // Clear image after adding to messages
+
+    try {
       let parts = [];
+      // Changed model to gemini-2.0-flash as requested
+      let modelName = "gemini-2.0-flash";
 
       if (inputText.trim()) {
         parts.push({ text: inputText.trim() });
       }
-      if (imagePreviewUrl) {
+
+      if (selectedImage && imagePreviewUrl) {
+        // If an image is present, include it in the parts
         const base64ImageData = imagePreviewUrl.split(",")[1];
         parts.push({
           inlineData: {
-            mimeType: selectedImage.type || "image/png",
+            mimeType: selectedImage.type || "image/png", // Fallback to png if type is unknown
             data: base64ImageData,
           },
         });
       }
 
-      chatHistory.push({ role: "user", parts: parts });
-
-      const payload = { contents: chatHistory };
-      const apiKey = "";
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-      try {
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+      // If only image is sent, provide a default prompt for narration
+      if (!inputText.trim() && selectedImage) {
+        parts.unshift({
+          text: "Describe this image in detail and provide a brief narration.",
         });
-
-        const result = await response.json();
-
-        if (
-          result.candidates &&
-          result.candidates.length > 0 &&
-          result.candidates[0].content &&
-          result.candidates[0].content.parts &&
-          result.candidates[0].content.parts.length > 0
-        ) {
-          aiResponseText = result.candidates[0].content.parts[0].text;
-          const newAiMessage = {
-            id: Date.now() + 1,
-            sender: "ai",
-            text: aiResponseText,
-            timestamp: new Date().toLocaleTimeString(),
-          };
-          setMessages((prevMessages) => [...prevMessages, newAiMessage]);
-        } else {
-          console.error("Gemini API response structure unexpected:", result);
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            {
-              id: Date.now() + 1,
-              sender: "ai",
-              text: "Sorry, I couldn't get a response from the AI.",
-              timestamp: new Date().toLocaleTimeString(),
-            },
-          ]);
-        }
-      } catch (error) {
-        console.error("Error calling Gemini API:", error);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: Date.now() + 1,
-            sender: "ai",
-            text: "An error occurred while communicating with the AI.",
-            timestamp: new Date().toLocaleTimeString(),
-          },
-        ]);
-      } finally {
-        setIsLoading(false);
       }
-    }, typingDelay); // Apply the random delay here
+
+      const payload = { contents: [{ role: "user", parts: parts }] };
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`;
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      let aiResponseText = "Sorry, I couldn't get a response from the AI.";
+
+      if (
+        result.candidates &&
+        result.candidates.length > 0 &&
+        result.candidates[0].content &&
+        result.candidates[0].content.parts &&
+        result.candidates[0].content.parts.length > 0
+      ) {
+        aiResponseText = result.candidates[0].content.parts[0].text;
+      } else if (result.error) {
+        console.error("Gemini API Error:", result.error);
+        aiResponseText = `Error from AI: ${result.error.message}`;
+      } else {
+        console.error(
+          "Gemini API response structure unexpected or empty:",
+          result
+        );
+      }
+
+      const newAiMessage = {
+        id: Date.now() + 1,
+        sender: "ai",
+        text: aiResponseText,
+        timestamp: new Date().toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setMessages((prevMessages) => [...prevMessages, newAiMessage]);
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now() + 1,
+          sender: "ai",
+          text: "An error occurred while communicating with the AI. Please try again.",
+          timestamp: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="relative h-screen bg-gray-100 font-inter">
-      {/* Tailwind CSS CDN for styling */}
-      <script src="https://cdn.tailwindcss.com"></script>
-      {/* Google Fonts link for Inter font */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
+      {/* Tailwind CSS CDN and Google Fonts links should typically be in public/index.html or the main CSS file, not here */}
+      {/* <script src="https://cdn.tailwindcss.com"></script> */}
+      {/* <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /> */}
       {/* Custom CSS for scrollbar styling */}
       <style>
         {`
@@ -233,6 +214,7 @@ function Chat({ isOpen: propIsOpen, onClose }) {
           }
           .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #555;
+            border-radius: 10px;
           }
         `}
       </style>
@@ -311,12 +293,27 @@ function Chat({ isOpen: propIsOpen, onClose }) {
             {messages.length === 0 && (
               <div className="text-center text-gray-500 mt-10">
                 <div className="mb-4">
-                  <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  <svg
+                    className="w-12 h-12 mx-auto text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
                   </svg>
                 </div>
-                <p className="text-lg font-medium">Welcome to AI Health Assistant!</p>
-                <p className="text-sm mt-2">Start a conversation by typing a message or uploading an image.</p>
+                <p className="text-lg font-medium">
+                  Welcome to AI Health Assistant!
+                </p>
+                <p className="text-sm mt-2">
+                  Start a conversation by typing a message or uploading an
+                  image.
+                </p>
               </div>
             )}
             {messages.map((msg) => (
@@ -329,8 +326,8 @@ function Chat({ isOpen: propIsOpen, onClose }) {
                 <div
                   className={`max-w-[75%] p-3 rounded-lg shadow-sm ${
                     msg.sender === "user"
-                      ? "bg-blue-500 text-white rounded-br-none" // User messages
-                      : "bg-gray-200 text-gray-800 rounded-bl-none" // AI messages
+                      ? "bg-blue-500 text-white rounded-br-none"
+                      : "bg-gray-200 text-gray-800 rounded-bl-none"
                   }`}
                 >
                   {msg.text && (
@@ -339,9 +336,9 @@ function Chat({ isOpen: propIsOpen, onClose }) {
                   {msg.imageUrl && (
                     <img
                       src={msg.imageUrl}
-                      alt="Sent image"
+                      alt="Sent content"
                       className="mt-2 rounded-md max-w-full h-auto object-cover"
-                      style={{ maxHeight: "200px" }} // Limit image height
+                      style={{ maxHeight: "200px" }}
                     />
                   )}
                   <span
@@ -355,7 +352,6 @@ function Chat({ isOpen: propIsOpen, onClose }) {
               </div>
             ))}
             {isLoading && (
-              // Loading indicator when AI is typing
               <div className="flex justify-start mb-4">
                 <div className="max-w-[75%] p-3 rounded-lg shadow-sm bg-gray-200 text-gray-800 rounded-bl-none">
                   <div className="flex items-center">
@@ -365,13 +361,12 @@ function Chat({ isOpen: propIsOpen, onClose }) {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} /> {/* Element to scroll into view */}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input Area */}
           <div className="p-4 border-t border-gray-200 bg-white">
             {imagePreviewUrl && (
-              // Image preview section
               <div className="relative mb-3 p-2 border border-gray-300 rounded-md bg-gray-50">
                 <img
                   src={imagePreviewUrl}
@@ -401,7 +396,6 @@ function Chat({ isOpen: propIsOpen, onClose }) {
               </div>
             )}
             <div className="flex items-center space-x-2">
-              {/* Hidden file input */}
               <input
                 type="file"
                 accept="image/*"
@@ -409,11 +403,11 @@ function Chat({ isOpen: propIsOpen, onClose }) {
                 ref={fileInputRef}
                 className="hidden"
               />
-              {/* Button to trigger file input */}
               <button
                 onClick={() => fileInputRef.current.click()}
                 className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors"
                 aria-label="Upload Image"
+                disabled={isLoading}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -430,26 +424,24 @@ function Chat({ isOpen: propIsOpen, onClose }) {
                   />
                 </svg>
               </button>
-              {/* Textarea for message input */}
               <textarea
                 className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none custom-scrollbar"
                 placeholder="Type your message..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={(e) => {
-                  // Send message on Enter key press (without Shift)
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleSendMessage();
                   }
                 }}
-                rows={1} // Start with one row
-                style={{ maxHeight: "100px" }} // Allow growing up to 100px
+                rows={1}
+                style={{ maxHeight: "100px" }}
+                disabled={isLoading}
               ></textarea>
-              {/* Send Message Button */}
               <button
                 onClick={handleSendMessage}
-                disabled={isLoading || (!inputText.trim() && !selectedImage)} // Disable if loading or inputs are empty
+                disabled={isLoading || (!inputText.trim() && !selectedImage)}
                 className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Send Message"
               >
