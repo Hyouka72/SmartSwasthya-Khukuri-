@@ -5,22 +5,28 @@ function About() {
   // Placeholder data for team members
   const teamMembers = [
     {
-      name: "Dr. Anya Sharma",
-      title: "Chief Medical Officer",
-      image: "https://via.placeholder.com/150/4CAF50/FFFFFF?text=Dr.+Sharma",
-      description: "With over 20 years of experience in internal medicine, Dr. Sharma leads our medical team with a focus on holistic patient care and innovative treatment protocols."
+      name: "Sanjog Gautam",
+      title: "Front End Developer",
+      image: "https://scontent.fktm10-1.fna.fbcdn.net/v/t39.30808-6/325625554_3267839993545850_7574233577202475193_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=0vd3lwF3NGoQ7kNvwGHk-pU&_nc_oc=AdmBuHyljOKG1YfwG8mUeOtz9PPpi2slt6S5CUKrehhF1PFKAn-MQZWezcqlVjKq-qA&_nc_zt=23&_nc_ht=scontent.fktm10-1.fna&_nc_gid=xtgp-zbAdQenkhjsVixp-w&oh=00_AfQl3ltZeunx3c_OTNUZPm-szBcQJ9YWDewgGtIFmxw07Q&oe=688A8489",
+      description: "Just a passionate front-end developer who loves creating beautiful and user-friendly interfaces. Enjoys working with React and Tailwind CSS to build responsive web applications."
     },
     {
-      name: "Mr. Rohan Gupta",
-      title: "Chief Operating Officer",
-      image: "https://via.placeholder.com/150/03A9F4/FFFFFF?text=Mr.+Gupta",
-      description: "Rohan oversees all operational aspects of Swastha, ensuring seamless patient experiences and efficient service delivery. His expertise in healthcare management is invaluable."
+      name: "Khewang Theeng Tamang",
+      title: "Backend Developer",
+      image: "https://scontent.fktm10-1.fna.fbcdn.net/v/t39.30808-6/476632913_1174122704267943_3407514313557583361_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Jls8NaHgJDUQ7kNvwFTNdPu&_nc_oc=AdnvlUefsetd2pWjpXlmWNII5UNCWbG6MbN5MhuC0Ry_Pb_qj3D_NedIgp9_zRGMocI&_nc_zt=23&_nc_ht=scontent.fktm10-1.fna&_nc_gid=iT7ZqlvHzAhTt2B5_KQcoA&oh=00_AfTjNtxJZobNt600KMcekAu3XJRkpeLh5kxXk9_ysKRdzg&oe=688A756B",
+      description: "Backend developer with a passion for creating efficient and scalable server-side applications. Loves solving complex problems and optimizing performance."
     },
     {
-      name: "Ms. Priya Singh",
-      title: "Head of Patient Relations",
-      image: "https://via.placeholder.com/150/FF9800/FFFFFF?text=Ms.+Singh",
-      description: "Priya is dedicated to ensuring every patient feels heard, respected, and cared for. She manages patient feedback and strives for continuous improvement in our services."
+      name: "Aswin Phuyal",
+      title: "Full Stack Developer",
+      image: "https://scontent.fktm10-1.fna.fbcdn.net/v/t1.6435-9/129495710_861275507979812_745740662732737043_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=aHpFQrLBZCUQ7kNvwEwr85j&_nc_oc=AdkXekEBfMMQqC_Bno42IVhR77zTjvHQxjBjWuQZ-WI-UfOAYLP40-mGUKlkt7uR4DQ&_nc_zt=23&_nc_ht=scontent.fktm10-1.fna&_nc_gid=pA47iknEXgBwNBzVWWlgTA&oh=00_AfSqiY3evDTBDq7OQ6jOmyCok74bJPLhQKIn2_sI8PyEYw&oe=68AC22DA",
+      description: "Full stack developer with passionate who has helped throughout the project and contributed sleepless night to do so."
+    },
+     {
+      name: "Robin Man Shrestha",
+      title: "Reseacher",
+      image: "https://scontent.fktm10-1.fna.fbcdn.net/v/t39.30808-6/387798220_3613280258917128_6651242293864789459_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=64TEsj-Fg48Q7kNvwFJkfuW&_nc_oc=AdmVughcMPc6s79kgtX-CXO0rrxiW20yjVFLqRvYP82rCQq3rnQiaoRR6i9l9EfoXrc&_nc_zt=23&_nc_ht=scontent.fktm10-1.fna&_nc_gid=if9_5_F73NAVHp8yK-QDEw&oh=00_AfTm81DeYIUURcAflCWgMseYPIbG8-gZR8e4m8rpGrJD6w&oe=688AA22F",
+      description: "Researcher who is the goat."
     }
   ];
 
