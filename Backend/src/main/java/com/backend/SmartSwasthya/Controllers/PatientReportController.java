@@ -1,4 +1,4 @@
-package com.backend.SmartSwasthya.Controller;
+package com.backend.SmartSwasthya.Controllers;
 
 import com.backend.SmartSwasthya.Models.PatientReport;
 import com.backend.SmartSwasthya.Services.PatientReportService;
@@ -7,12 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/patient-reports")
-
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 public class PatientReportController {
 
     private final PatientReportService patientReportService;
@@ -27,39 +28,47 @@ public class PatientReportController {
             @RequestParam("patientId") Long patientId,
             @RequestParam("reportType") String reportType,
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "uploadedBy", required = false) String uploadedBy) { // uploadedBy can be optional
+            @RequestParam(value = "uploadedBy", required = false) String uploadedBy) {
         try {
             PatientReport report = patientReportService.uploadReport(patientId, reportType, file, uploadedBy);
             return new ResponseEntity<>(report, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (RuntimeException e) {
             // Catch more general runtime errors, e.g., Cloudinary upload failure
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload report: " + e.getMessage(), e);
         }
     }
 
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<PatientReport>> getReportsByPatientId(@PathVariable Long patientId) {
-        List<PatientReport> reports = patientReportService.getReportsByPatientId(patientId);
-        if (reports.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Or HttpStatus.NO_CONTENT
+        try {
+            List<PatientReport> reports = patientReportService.getReportsByPatientId(patientId);
+            if (reports.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content if no reports found for patient
+            }
+            return new ResponseEntity<>(reports, HttpStatus.OK);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching patient reports.", e);
         }
-        return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PatientReport> getReportById(@PathVariable Long id) {
         return patientReportService.getReportById(id)
                 .map(report -> new ResponseEntity<>(report, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient report not found with ID: " + id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReport(@PathVariable Long id) {
-        if (patientReportService.deleteReport(id)) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        try {
+            if (patientReportService.deleteReport(id)) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient report not found with ID: " + id);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting patient report.", e);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

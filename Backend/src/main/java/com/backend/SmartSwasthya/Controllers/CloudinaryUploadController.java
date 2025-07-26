@@ -1,8 +1,7 @@
-package com.backend.SmartSwasthya.Controller;
+package com.backend.SmartSwasthya.Controllers;
 
 
 import com.backend.SmartSwasthya.Services.CloudinaryImageServiceImpl;
-import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
