@@ -224,13 +224,14 @@ function Home() {
           Contact us today to schedule your consultation and begin your journey
           to a healthier you.
         </p>
-        <button
+       <Link to="/contact"> <button
           className="bg-white text-green-700 hover:bg-green-800 hover:text-white
                            font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
                            transition-all duration-300 transform hover:scale-105 active:scale-100"
         >
           Get in Touch
         </button>
+        </Link>
       </section>
     </div>
   );
