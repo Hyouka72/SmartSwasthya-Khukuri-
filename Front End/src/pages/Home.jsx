@@ -176,7 +176,7 @@ function Home() {
             className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 w-full max-w-sm"
           >
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Telehealth Consultations
+              AI Asistant
             </h3>
             <p className="text-gray-600 leading-normal">
               Convenient online medical advice and support.
