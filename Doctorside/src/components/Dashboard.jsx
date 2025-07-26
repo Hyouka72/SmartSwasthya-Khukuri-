@@ -24,7 +24,7 @@ import {
   Thermometer,
   QrCode,
 } from "lucide-react";
-import  QrReader  from "react-qr-reader"; // Import the QR code reader component
+import  {QrReader}  from "react-qr-reader"; // Import the QR code reader component
 
 // Mock data for demonstration
 const mockAppointments = [
@@ -516,7 +516,7 @@ const DoctorDashboard = () => {
                         <tr key={apt.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text- sm font-medium text-gray-900">
                                 {apt.patientName}
                               </div>
                               <div className="text-sm text-gray-500">
