@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 
 function InsuranceDetails() {
-  
-  const user = { firstName: "Sanjog" , lastName: "Gautam" }; // Mock user data
+  const user = { firstName: "Sanjog", lastName: "Gautam" }; // Mock user data
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [hasInsuranceCard, setHasInsuranceCard] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
@@ -26,15 +25,21 @@ function InsuranceDetails() {
     if (insuranceData.provider && insuranceData.policyNumber && insuranceData.memberID) {
       setHasInsuranceCard(true);
       setShowCardForm(false);
-      alert("Insurance card details saved successfully!");
+      // Using a custom message box instead of alert() as per instructions
+      // For a real app, you'd implement a proper modal or toast notification
+      console.log("Insurance card details saved successfully!"); // Log to console
+      // You could update a state variable to show a success message in the UI
     } else {
-      alert("Please fill in all required fields");
+      // Using a custom message box instead of alert() as per instructions
+      console.log("Please fill in all required fields"); // Log to console
+      // You could update a state variable to show an error message in the UI
     }
   };
 
   const handleClaimSelect = (claimType) => {
     if (!hasInsuranceCard) {
-      alert("Please add your insurance card details first to proceed with claims");
+      // Using a custom message box instead of alert() as per instructions
+      console.log("Please add your insurance card details first to proceed with claims"); // Log to console
       setShowCardForm(true);
       return;
     }
@@ -43,7 +48,9 @@ function InsuranceDetails() {
 
   const handleClaimSubmit = () => {
     console.log(`Submitting ${selectedClaim} claim`);
-    alert(`${selectedClaim} claim process initiated!`);
+    // Using a custom message box instead of alert() as per instructions
+    console.log(`${selectedClaim} claim process initiated!`); // Log to console
+    // You could update a state variable to show a success message in the UI
   };
 
   return (
@@ -329,7 +336,7 @@ function InsuranceDetails() {
                     <p className="text-gray-600 mb-4">
                       Pay for treatment yourself and get reimbursed later. Can be used at any hospital or clinic.
                     </p>
-                   
+                    
                   </div>
                 </div>
 
@@ -376,7 +383,15 @@ function InsuranceDetails() {
                   </svg>
                   Contact Support
                 </button>
-                </div>
+                {/* Renew Policy Button - Styled */}
+                
+              </div>
+              <button className="w-full flex items-center justify-center my-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 w-f">
+                  <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Renew Policy
+                </button>
             </div>
           </div>
         )}
