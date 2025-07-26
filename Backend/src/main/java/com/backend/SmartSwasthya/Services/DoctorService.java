@@ -28,58 +28,79 @@ public class DoctorService {
     }
 
     @Transactional
-    public Doctor createDoctor(Doctor doctor) {
-        if (doctor.getHospital() == null || doctor.getHospital().getId() == null) {
-            throw new IllegalArgumentException("Hospital information is required for a doctor.");
+    public Doctor createDoctor(Doctor doctor, Long hospitalId, Long departmentId) {
+        Hospital hospital = hospitalRepository.findById(hospitalId)
+                .orElseThrow(() -> new IllegalArgumentException("Hospital not found with ID: " + hospitalId));
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found with ID: " + departmentId));
+
+        // Optional: Validate if department belongs to hospital
+        if (!department.getHospital().getId().equals(hospitalId)) {
+            throw new IllegalArgumentException("Department with ID " + departmentId + " does not belong to Hospital with ID " + hospitalId);
         }
-        Hospital hospital = hospitalRepository.findById(doctor.getHospital().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Hospital with ID " + doctor.getHospital().getId() + " not found."));
+
         doctor.setHospital(hospital);
-
-        if (doctor.getDepartment() == null || doctor.getDepartment().getId() == null) {
-            throw new IllegalArgumentException("Department information is required for a doctor.");
-        }
-        Department department = departmentRepository.findById(doctor.getDepartment().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Department with ID " + doctor.getDepartment().getId() + " not found."));
         doctor.setDepartment(department);
-
         return doctorRepository.save(doctor);
     }
 
+    @Transactional(readOnly = true)
     public List<Doctor> getAllDoctors() {
         return doctorRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Doctor> getDoctorById(Long id) {
         return doctorRepository.findById(id);
     }
 
-    public List<Doctor> getDoctorsByHospitalId(Long hospitalId) {
-        return doctorRepository.findByHospitalId(hospitalId);
-    }
-
+    @Transactional(readOnly = true)
     public List<Doctor> getDoctorsByDepartmentId(Long departmentId) {
+        // Optional: Validate department existence
+        // departmentRepository.findById(departmentId).orElseThrow(() -> new IllegalArgumentException("Department not found with ID: " + departmentId));
         return doctorRepository.findByDepartmentId(departmentId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Doctor> getDoctorsByHospitalAndDepartment(Long hospitalId, Long departmentId) {
+        // Validate existence for both for robust error handling
+        hospitalRepository.findById(hospitalId)
+                .orElseThrow(() -> new IllegalArgumentException("Hospital not found with ID: " + hospitalId));
+        departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found with ID: " + departmentId));
+        return doctorRepository.findByHospitalIdAndDepartmentId(hospitalId, departmentId);
+    }
+
     @Transactional
-    public Optional<Doctor> updateDoctor(Long id, Doctor updatedDoctor) {
+    public Optional<Doctor> updateDoctor(Long id, Doctor doctorDetails, Long hospitalId, Long departmentId) {
         return doctorRepository.findById(id).map(existingDoctor -> {
-            existingDoctor.setName(updatedDoctor.getName());
-            existingDoctor.setContact(updatedDoctor.getContact());
+            existingDoctor.setName(doctorDetails.getName());
+            existingDoctor.setContact(doctorDetails.getContact());
+            existingDoctor.setSpecialization(doctorDetails.getSpecialization());
 
-            if (updatedDoctor.getHospital() != null && updatedDoctor.getHospital().getId() != null) {
-                Hospital hospital = hospitalRepository.findById(updatedDoctor.getHospital().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Hospital with ID " + updatedDoctor.getHospital().getId() + " not found for doctor update."));
-                existingDoctor.setHospital(hospital);
+            boolean hospitalChanged = hospitalId != null && !existingDoctor.getHospital().getId().equals(hospitalId);
+            boolean departmentChanged = departmentId != null && !existingDoctor.getDepartment().getId().equals(departmentId);
+
+            if (hospitalChanged || departmentChanged) {
+                Hospital newHospital = existingDoctor.getHospital();
+                Department newDepartment = existingDoctor.getDepartment();
+
+                if (hospitalChanged) {
+                    newHospital = hospitalRepository.findById(hospitalId)
+                            .orElseThrow(() -> new IllegalArgumentException("New Hospital not found with ID: " + hospitalId));
+                    existingDoctor.setHospital(newHospital);
+                }
+                if (departmentChanged) {
+                    newDepartment = departmentRepository.findById(departmentId)
+                            .orElseThrow(() -> new IllegalArgumentException("New Department not found with ID: " + departmentId));
+                    existingDoctor.setDepartment(newDepartment);
+                }
+
+                // If both changed, or only department changed, ensure new department belongs to potentially new hospital
+                if ( (hospitalChanged || departmentChanged) && !newDepartment.getHospital().getId().equals(newHospital.getId()) ) {
+                    throw new IllegalArgumentException("Updated department with ID " + newDepartment.getId() + " does not belong to the (new) Hospital with ID " + newHospital.getId());
+                }
             }
-
-            if (updatedDoctor.getDepartment() != null && updatedDoctor.getDepartment().getId() != null) {
-                Department department = departmentRepository.findById(updatedDoctor.getDepartment().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Department with ID " + updatedDoctor.getDepartment().getId() + " not found for doctor update."));
-                existingDoctor.setDepartment(department);
-            }
-
             return doctorRepository.save(existingDoctor);
         });
     }
@@ -93,4 +114,3 @@ public class DoctorService {
         return false;
     }
 }
-

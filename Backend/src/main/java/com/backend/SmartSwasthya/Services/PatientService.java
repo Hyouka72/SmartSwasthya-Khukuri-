@@ -24,40 +24,41 @@ public class PatientService {
     }
 
     @Transactional
-    public Patient createPatient(Patient patient) {
-        if (patient.getHospital() == null || patient.getHospital().getId() == null) {
-            throw new IllegalArgumentException("Hospital information is required for a patient.");
-        }
-        Hospital hospital = hospitalRepository.findById(patient.getHospital().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Hospital with ID " + patient.getHospital().getId() + " not found."));
+    public Patient createPatient(Patient patient, Long hospitalId) {
+        Hospital hospital = hospitalRepository.findById(hospitalId)
+                .orElseThrow(() -> new IllegalArgumentException("Hospital not found with ID: " + hospitalId));
         patient.setHospital(hospital);
         return patientRepository.save(patient);
     }
 
+    @Transactional(readOnly = true)
     public List<Patient> getAllPatients() {
         return patientRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Patient> getPatientById(Long id) {
         return patientRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
     public List<Patient> getPatientsByHospitalId(Long hospitalId) {
+        // Optional: Validate hospital existence
+        // hospitalRepository.findById(hospitalId).orElseThrow(() -> new IllegalArgumentException("Hospital not found with ID: " + hospitalId));
         return patientRepository.findByHospitalId(hospitalId);
     }
 
     @Transactional
-    public Optional<Patient> updatePatient(Long id, Patient updatedPatient) {
+    public Optional<Patient> updatePatient(Long id, Patient patientDetails, Long hospitalId) {
         return patientRepository.findById(id).map(existingPatient -> {
-            existingPatient.setName(updatedPatient.getName());
-            existingPatient.setPhone(updatedPatient.getPhone());
-            existingPatient.setGender(updatedPatient.getGender());
-            existingPatient.setAge(updatedPatient.getAge());
-
-            if (updatedPatient.getHospital() != null && updatedPatient.getHospital().getId() != null) {
-                Hospital hospital = hospitalRepository.findById(updatedPatient.getHospital().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Hospital with ID " + updatedPatient.getHospital().getId() + " not found for patient update."));
-                existingPatient.setHospital(hospital);
+            existingPatient.setName(patientDetails.getName());
+            existingPatient.setPhone(patientDetails.getPhone());
+            existingPatient.setGender(patientDetails.getGender());
+            existingPatient.setAge(patientDetails.getAge());
+            if (hospitalId != null && !existingPatient.getHospital().getId().equals(hospitalId)) {
+                Hospital newHospital = hospitalRepository.findById(hospitalId)
+                        .orElseThrow(() -> new IllegalArgumentException("New Hospital not found with ID: " + hospitalId));
+                existingPatient.setHospital(newHospital);
             }
             return patientRepository.save(existingPatient);
         });

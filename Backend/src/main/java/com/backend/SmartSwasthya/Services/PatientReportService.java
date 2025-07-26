@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional; // Added for transactional upload
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,8 @@ public class PatientReportService {
             uploadResult = cloudinaryImageService.upload(file);
         } catch (RuntimeException e) { // Catch the RuntimeException thrown by CloudinaryImageServiceImpl
             throw new RuntimeException("Failed to upload report file to Cloudinary: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         String reportUrl = (String) uploadResult.get("url"); // Get the URL from the Cloudinary response

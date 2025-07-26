@@ -21,27 +21,27 @@ public class HospitalService {
 
     @Transactional
     public Hospital createHospital(Hospital hospital) {
-        // Add any specific validation here before saving
         return hospitalRepository.save(hospital);
     }
 
+    @Transactional(readOnly = true)
     public List<Hospital> getAllHospitals() {
         return hospitalRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Hospital> getHospitalById(Long id) {
         return hospitalRepository.findById(id);
     }
 
     @Transactional
-    public Optional<Hospital> updateHospital(Long id, Hospital updatedHospital) {
-        return hospitalRepository.findById(id).map(hospital -> {
-            hospital.setName(updatedHospital.getName());
-            hospital.setAddress(updatedHospital.getAddress());
-            hospital.setEmail(updatedHospital.getEmail());
-            // Relationships (departments, doctors, patients) are typically managed
-            // through their respective services, not directly updated here.
-            return hospitalRepository.save(hospital);
+    public Optional<Hospital> updateHospital(Long id, Hospital hospitalDetails) {
+        return hospitalRepository.findById(id).map(existingHospital -> {
+            existingHospital.setName(hospitalDetails.getName());
+            existingHospital.setAddress(hospitalDetails.getAddress());
+            existingHospital.setEmail(hospitalDetails.getEmail());
+            // Update relationships if necessary, though direct update is uncommon here.
+            return hospitalRepository.save(existingHospital);
         });
     }
 
@@ -54,5 +54,3 @@ public class HospitalService {
         return false;
     }
 }
-
-

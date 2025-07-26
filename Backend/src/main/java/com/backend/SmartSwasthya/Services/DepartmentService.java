@@ -24,38 +24,39 @@ public class DepartmentService {
     }
 
     @Transactional
-    public Department createDepartment(Department department) {
-        if (department.getHospital() == null || department.getHospital().getId() == null) {
-            throw new IllegalArgumentException("Hospital information is required for a department.");
-        }
-        Hospital hospital = hospitalRepository.findById(department.getHospital().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Hospital with ID " + department.getHospital().getId() + " not found."));
+    public Department createDepartment(Department department, Long hospitalId) {
+        Hospital hospital = hospitalRepository.findById(hospitalId)
+                .orElseThrow(() -> new IllegalArgumentException("Hospital not found with ID: " + hospitalId));
         department.setHospital(hospital);
         return departmentRepository.save(department);
     }
 
+    @Transactional(readOnly = true)
     public List<Department> getAllDepartments() {
         return departmentRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Department> getDepartmentById(Long id) {
         return departmentRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
     public List<Department> getDepartmentsByHospitalId(Long hospitalId) {
+        // Optional: Validate hospital existence if you want 404 if hospital is not found
+        // hospitalRepository.findById(hospitalId).orElseThrow(() -> new IllegalArgumentException("Hospital not found with ID: " + hospitalId));
         return departmentRepository.findByHospitalId(hospitalId);
     }
 
     @Transactional
-    public Optional<Department> updateDepartment(Long id, Department updatedDepartment) {
+    public Optional<Department> updateDepartment(Long id, Department departmentDetails, Long hospitalId) {
         return departmentRepository.findById(id).map(existingDepartment -> {
-            existingDepartment.setName(updatedDepartment.getName());
-            existingDepartment.setDescription(updatedDepartment.getDescription());
-
-            if (updatedDepartment.getHospital() != null && updatedDepartment.getHospital().getId() != null) {
-                Hospital hospital = hospitalRepository.findById(updatedDepartment.getHospital().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Hospital with ID " + updatedDepartment.getHospital().getId() + " not found for department update."));
-                existingDepartment.setHospital(hospital);
+            existingDepartment.setName(departmentDetails.getName());
+            existingDepartment.setDescription(departmentDetails.getDescription());
+            if (hospitalId != null && !existingDepartment.getHospital().getId().equals(hospitalId)) {
+                Hospital newHospital = hospitalRepository.findById(hospitalId)
+                        .orElseThrow(() -> new IllegalArgumentException("New Hospital not found with ID: " + hospitalId));
+                existingDepartment.setHospital(newHospital);
             }
             return departmentRepository.save(existingDepartment);
         });

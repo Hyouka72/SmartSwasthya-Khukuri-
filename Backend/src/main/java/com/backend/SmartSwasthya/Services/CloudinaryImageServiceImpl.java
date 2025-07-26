@@ -11,7 +11,7 @@ import java.util.Map;
 @Service
 public class CloudinaryImageServiceImpl implements CloudinaryImageService {
 
-    private final Cloudinary cloudinary; // Use final and constructor injection
+    private final Cloudinary cloudinary;
 
     @Autowired
     public CloudinaryImageServiceImpl(Cloudinary cloudinary) {
@@ -19,16 +19,13 @@ public class CloudinaryImageServiceImpl implements CloudinaryImageService {
     }
 
     @Override
-    public Map<String, Object> upload(MultipartFile file) { // Use Map<String, Object> for return type
-        try {
-            // Map.of() is for additional options, leave empty if not needed
-            // You might want to add folder names, resource types etc. here:
-            // e.g., Map.of("folder", "patient_reports", "resource_type", "auto")
-            return cloudinary.uploader().upload(file.getBytes(), Map.of());
-        } catch (IOException e) {
-            // Log the exception properly in a real application
-            // LoggerFactory.getLogger(CloudinaryImageServiceImpl.class).error("Cloudinary upload failed", e);
-            throw new RuntimeException("Error while uploading image to Cloudinary: " + e.getMessage(), e);
-        }
+    public Map<String, Object> upload(MultipartFile file) throws IOException {
+        // You can add more options here, like folder, tags etc.
+        return cloudinary.uploader().upload(file.getBytes(), Map.of());
+    }
+
+    @Override
+    public void deleteImage(String publicId) throws IOException {
+        cloudinary.uploader().destroy(publicId, Map.of());
     }
 }
