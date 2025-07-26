@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SmartSwasthyaApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(SmartSwasthyaApplication.class, args);
 	}
 

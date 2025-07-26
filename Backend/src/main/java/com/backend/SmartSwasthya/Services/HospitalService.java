@@ -2,47 +2,57 @@ package com.backend.SmartSwasthya.Services;
 
 import com.backend.SmartSwasthya.Models.Hospital;
 import com.backend.SmartSwasthya.Repository.HospitalRepository;
-import com.backend.SmartSwasthya.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class HospitalService {
+
+    private final HospitalRepository hospitalRepository;
+
     @Autowired
-    private HospitalRepository repo;
-
-    //Create
-    public Hospital saveHospital(Hospital hospital) {
-        return repo.save(hospital);
+    public HospitalService(HospitalRepository hospitalRepository) {
+        this.hospitalRepository = hospitalRepository;
     }
 
-    //Read all
-    public List<Hospital> findAllHospitals() {
-        return repo.findAll(); }
-
-    //update
-    public Hospital updateHospital(long id,Hospital hospital) {
-        Hospital existingHospital = repo.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Hospital no found"+ id));
-        existingHospital.setName(hospital.getName());
-        existingHospital.setAddress(hospital.getAddress());
-        existingHospital.setEmail(hospital.getEmail());
-
-        return repo.save(existingHospital);
+    @Transactional
+    public Hospital createHospital(Hospital hospital) {
+        // Add any specific validation here before saving
+        return hospitalRepository.save(hospital);
     }
 
-
-    //Read by ID
-    public Hospital findHospitalById(long id) {
-        return repo.findById(id).orElse(null);
+    public List<Hospital> getAllHospitals() {
+        return hospitalRepository.findAll();
     }
 
-    //Delete by ID
-    public void deleteHospital(Long id) {
-        repo.deleteById(id);
+    public Optional<Hospital> getHospitalById(Long id) {
+        return hospitalRepository.findById(id);
     }
 
+    @Transactional
+    public Optional<Hospital> updateHospital(Long id, Hospital updatedHospital) {
+        return hospitalRepository.findById(id).map(hospital -> {
+            hospital.setName(updatedHospital.getName());
+            hospital.setAddress(updatedHospital.getAddress());
+            hospital.setEmail(updatedHospital.getEmail());
+            // Relationships (departments, doctors, patients) are typically managed
+            // through their respective services, not directly updated here.
+            return hospitalRepository.save(hospital);
+        });
+    }
 
+    @Transactional
+    public boolean deleteHospital(Long id) {
+        if (hospitalRepository.existsById(id)) {
+            hospitalRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }
+
+
