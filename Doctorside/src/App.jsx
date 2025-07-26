@@ -1,5 +1,5 @@
 import React from 'react'
-import DoctorDashboard from './components/Dashboard'
+import DoctorDashboard from './components/DoctorDashboard'
 import './App.css'
 
 function App() {

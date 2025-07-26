@@ -377,7 +377,7 @@ const DoctorDashboard = () => {
                   Dashboard
                 </h1>
                 <p className="text-gray-600">
-                  Welcome back, Dr. Smith. Here's your daily overview.
+                  Welcome back, Dr.Shyam. Here's your daily overview.
                 </p>
               </div>
 
@@ -388,14 +388,12 @@ const DoctorDashboard = () => {
                   title="Today's Appointments"
                   value="12"
                   color="blue"
-                  trend="+8% from yesterday"
                 />
                 <StatCard
                   icon={Users}
                   title="Total Patients"
                   value="156"
                   color="green"
-                  trend="+12% this month"
                 />
                 <StatCard
                   icon={Clock}
@@ -408,7 +406,6 @@ const DoctorDashboard = () => {
                   title="Completed Today"
                   value="8"
                   color="red"
-                  trend="+15% efficiency"
                 />
               </div>
 
@@ -546,12 +543,7 @@ const DoctorDashboard = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Urgency
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                 
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -582,41 +574,7 @@ const DoctorDashboard = () => {
                               {apt.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`text-sm font-medium ${getUrgencyColor(
-                                apt.urgency
-                              )}`}
-                            >
-                              {apt.urgency}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => setSelectedAppointment(apt)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleAppointmentAction(apt.id, "confirm")
-                                }
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleAppointmentAction(apt.id, "cancel")
-                                }
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
+                  
                         </tr>
                       ))}
                     </tbody>
