@@ -9,7 +9,7 @@ function TelehealthConsultations() {
   // Use useEffect to open the chat when the component mounts
   useEffect(() => {
     setIsChatOpen(true); // Automatically open chat when page loads
-  }, []); // Empty dependency array means this runs once on mount
+  }, []); // Empty dependency array means this runs once ogn mount
 
   return (
     <div>
