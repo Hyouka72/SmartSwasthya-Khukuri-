@@ -24,7 +24,7 @@ import {
   Thermometer,
   QrCode,
 } from "lucide-react";
-import  {QrReader}  from "react-qr-reader"; // Import the QR code reader component
+import { QrReader } from "react-qr-reader";
 
 // Mock data for demonstration
 const mockAppointments = [
@@ -157,15 +157,56 @@ const DoctorDashboard = () => {
   // Effect to open patient modal when scannedData changes
   useEffect(() => {
     if (scannedData) {
-      const patient = mockPatients.find((p) => p.id === scannedData);
-      if (patient) {
-        setSelectedPatient(patient);
-        setShowPatientModal(true);
-        setIsScannerOpen(false); // Close scanner after finding patient
-        setScannedData(null); // Clear scanned data
-      } else {
-        alert(`Patient with ID "${scannedData}" not found.`);
-        setScannedData(null); // Clear scanned data even if not found
+      let patientId = null;
+
+      try {
+        // Try to parse as JSON first (for complex QR codes)
+        const parsedData = JSON.parse(scannedData);
+        patientId = parsedData.patientId || parsedData.memberNumber;
+
+        // If memberNumber format, convert it to match our patient IDs
+        if (patientId && patientId.startsWith("SW")) {
+          // This is a member number format, need to find by member number or convert
+          // For now, let's search by name or email as well
+          const patient = mockPatients.find(
+            (p) =>
+              p.id === patientId ||
+              p.name === parsedData.name ||
+              p.email === parsedData.email
+          );
+
+          if (patient) {
+            setSelectedPatient(patient);
+            setShowPatientModal(true);
+            setIsScannerOpen(false);
+            setScannedData(null);
+          } else {
+            alert(
+              `Patient with ID "${patientId}" not found. Parsed data: ${JSON.stringify(
+                parsedData,
+                null,
+                2
+              )}`
+            );
+            setScannedData(null);
+          }
+        }
+      } catch (error) {
+        // If it's not JSON, treat as simple patient ID
+        patientId = scannedData.trim();
+        const patient = mockPatients.find((p) => p.id === patientId);
+
+        if (patient) {
+          setSelectedPatient(patient);
+          setShowPatientModal(true);
+          setIsScannerOpen(false);
+          setScannedData(null);
+        } else {
+          alert(
+            `Patient with ID "${patientId}" not found. Scanned data: "${scannedData}"`
+          );
+          setScannedData(null);
+        }
       }
     }
   }, [scannedData]);
@@ -237,16 +278,15 @@ const DoctorDashboard = () => {
   const handleScanResult = (result, error) => {
     if (result) {
       setScannedData(result.text);
-      setScannerError(null); // Clear any previous errors
+      setScannerError(null);
     }
     if (error) {
-      // console.error(error); // Log errors for debugging
-      // setScannerError(error.message || "Scanning error"); // Optional: display error to user
+      console.error("QR Scan Error:", error);
     }
   };
 
   const handleScannerError = (err) => {
-    console.error(err);
+    console.error("Scanner Error:", err);
     setScannerError("Failed to access camera or scanning error occurred.");
   };
 
@@ -298,7 +338,7 @@ const DoctorDashboard = () => {
                 { id: "dashboard", label: "Dashboard", icon: Activity },
                 { id: "appointments", label: "Appointments", icon: Calendar },
                 { id: "patients", label: "Patients", icon: Users },
-                { id: "scan-qr", label: "Scan QR Code", icon: QrCode }, // New QR Scan option
+                { id: "scan-qr", label: "Scan QR Code", icon: QrCode },
                 { id: "messages", label: "Messages", icon: MessageSquare },
                 { id: "reports", label: "Reports", icon: FileText },
                 { id: "settings", label: "Settings", icon: Settings },
@@ -308,9 +348,9 @@ const DoctorDashboard = () => {
                     onClick={() => {
                       setActiveTab(item.id);
                       if (item.id === "scan-qr") {
-                        setIsScannerOpen(true); // Open scanner when 'Scan QR Code' is clicked
+                        setIsScannerOpen(true);
                       } else {
-                        setIsScannerOpen(false); // Close scanner if another tab is selected
+                        setIsScannerOpen(false);
                       }
                     }}
                     className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200 ${
@@ -400,10 +440,13 @@ const DoctorDashboard = () => {
                         Add New Patient
                       </span>
                     </button>
-                    <button className="w-full flex items-center justify-between p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200">
+                    <button
+                      onClick={() => setActiveTab("scan-qr")}
+                      className="w-full flex items-center justify-between p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200"
+                    >
                       <span className="flex items-center">
-                        <FileText className="w-5 h-5 text-purple-600 mr-3" />
-                        Generate Report
+                        <QrCode className="w-5 h-5 text-purple-600 mr-3" />
+                        Scan Patient QR
                       </span>
                     </button>
                   </div>
@@ -701,58 +744,117 @@ const DoctorDashboard = () => {
               <h1 className="text-3xl font-bold text-gray-900">
                 Scan Patient QR Code
               </h1>
-              <div className="bg-white p-8 rounded-lg shadow-md text-center flex flex-col items-center">
-                <p className="text-gray-600 mb-4">
-                  Point your camera at the patient's QR code to quickly pull up
-                  their profile.
-                </p>
-                <div className="w-full max-w-md bg-gray-200 rounded-lg overflow-hidden relative">
-                  {isScannerOpen ? (
-                    <QrReader
-                      onResult={handleScanResult}
-                      onError={handleScannerError}
-                      constraints={{ facingMode: "environment" }} // Use rear camera if available
-                      scanDelay={500} // Milliseconds delay between scans
-                      videoStyle={{ width: "100%", height: "auto" }}
-                      containerStyle={{
-                        width: "100%",
-                        paddingBottom: "100%",
-                        position: "relative",
-                      }} // Maintain aspect ratio
-                      videoContainerStyle={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                      }}
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-10">
-                      <QrCode className="w-24 h-24 text-gray-400 mb-4" />
-                      <p className="text-gray-500">
-                        Scanner not active. Select 'Scan QR Code' from sidebar.
+              <div className="bg-white p-8 rounded-lg shadow-md">
+                <div className="text-center mb-6">
+                  <p className="text-gray-600 mb-4">
+                    Point your camera at the patient's QR code to quickly pull
+                    up their profile.
+                  </p>
+
+                  {scannedData && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-blue-800 font-medium">
+                        Last Scanned Data:
+                      </p>
+                      <p className="text-blue-600 text-sm break-all">
+                        {scannedData}
                       </p>
                     </div>
                   )}
-                </div>
-                {scannedData && (
-                  <p className="mt-4 text-green-600 font-medium">
-                    Scanned: {scannedData}
-                  </p>
-                )}
-                {scannerError && (
-                  <p className="mt-4 text-red-600 font-medium">
-                    Error: {scannerError}
-                  </p>
-                )}
 
-                <button
-                  onClick={() => setIsScannerOpen((prev) => !prev)}
-                  className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  {isScannerOpen ? "Stop Scan" : "Start Scan"}
-                </button>
+                  {scannerError && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-800 font-medium">Scanner Error:</p>
+                      <p className="text-red-600 text-sm">{scannerError}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="w-full max-w-md bg-gray-200 rounded-lg overflow-hidden relative mb-6">
+                    {isScannerOpen ? (
+                      <div className="relative">
+                        <QrReader
+                          onResult={handleScanResult}
+                          onError={handleScannerError}
+                          constraints={{ facingMode: "environment" }}
+                          scanDelay={500}
+                          style={{ width: "100%" }}
+                        />
+                        <div className="absolute inset-0 border-2 border-white pointer-events-none">
+                          <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-blue-500"></div>
+                          <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-blue-500"></div>
+                          <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-blue-500"></div>
+                          <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-blue-500"></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-16 bg-gray-100">
+                        <QrCode className="w-24 h-24 text-gray-400 mb-4" />
+                        <p className="text-gray-500 text-center">
+                          Click "Start Scanner" to begin scanning QR codes
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setIsScannerOpen((prev) => !prev)}
+                      className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                        isScannerOpen
+                          ? "bg-red-600 hover:bg-red-700 text-white"
+                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                      }`}
+                    >
+                      {isScannerOpen ? (
+                        <>
+                          <XCircle className="w-5 h-5 inline mr-2" />
+                          Stop Scanner
+                        </>
+                      ) : (
+                        <>
+                          <QrCode className="w-5 h-5 inline mr-2" />
+                          Start Scanner
+                        </>
+                      )}
+                    </button>
+
+                    {scannerError && (
+                      <button
+                        onClick={() => setScannerError(null)}
+                        className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        Clear Error
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div className="mt-8 bg-blue-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-4">
+                    Scanning Instructions
+                  </h3>
+                  <ul className="space-y-2 text-sm text-blue-800">
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-blue-600" />
+                      Ensure good lighting for best scanning results
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-blue-600" />
+                      Hold the QR code steady within the scanner frame
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-blue-600" />
+                      The scanner will automatically detect and process QR codes
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-blue-600" />
+                      Patient profile will open automatically when found
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           )}
