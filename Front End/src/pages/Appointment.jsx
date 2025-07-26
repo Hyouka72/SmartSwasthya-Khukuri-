@@ -89,7 +89,7 @@ const AppointmentBooking = () => {
                 <User className="w-6 h-6 text-blue-600" />
                 Personal Information
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -101,7 +101,7 @@ const AppointmentBooking = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Email Address <span className="text-red-500">*</span>
@@ -112,7 +112,7 @@ const AppointmentBooking = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Phone Number
@@ -132,7 +132,7 @@ const AppointmentBooking = () => {
                 <MapPin className="w-6 h-6 text-blue-600" />
                 Select Hospital
               </h2>
-              
+
               <div className="relative">
                 <select
                   value={selectedHospital}
@@ -156,7 +156,7 @@ const AppointmentBooking = () => {
                 <Clock className="w-6 h-6 text-blue-600" />
                 Appointment Details
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -252,14 +252,14 @@ const AppointmentBooking = () => {
             {/* Calendar Preview */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Schedule</h3>
-              
+
               <div className="space-y-3">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="text-blue-700 font-semibold">Thursday, July 31, 2025</div>
                   <div className="text-sm text-blue-600 mt-1">Available: 09:00 AM - 04:45 PM</div>
                   <div className="text-xs text-blue-500 mt-1">6 time slots available</div>
                 </div>
-                
+
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-gray-700 font-semibold">Friday, August 1, 2025</div>
                   <div className="text-sm text-gray-600 mt-1">Available: 10:00 AM - 03:45 PM</div>
@@ -278,25 +278,25 @@ const AppointmentBooking = () => {
             {showDoctorProfile && (
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Selected Doctor</h3>
-                
+
                 <div className="text-center">
                   <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <User className="w-10 h-10 text-gray-400" />
                   </div>
-                  
+
                   <h4 className="font-bold text-gray-900 text-lg">{selectedDoctor}</h4>
                   <p className="text-blue-600 text-sm mb-2">
                     {selectedDepartment && doctors[selectedDepartment]?.find(d => d.name === selectedDoctor)?.specialization}
                   </p>
                   <p className="text-gray-600 text-sm mb-4">{selectedDepartment} Department</p>
-                  
+
                   <div className="bg-green-50 p-3 rounded-lg mb-4">
                     <div className="text-green-800 font-semibold text-sm">Selected Time Slot</div>
                     <div className="text-green-700 text-lg font-bold">
                       {timeSlots.find(slot => slot.value === selectedTime)?.time}
                     </div>
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="text-sm text-gray-600">Consultation Fee</div>
                     <div className="text-2xl font-bold text-blue-600">NPR 1,500</div>
@@ -308,19 +308,19 @@ const AppointmentBooking = () => {
             {/* Quick Info */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Info</h3>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <div className="text-3xl font-bold text-blue-600">31</div>
                   <div className="text-sm text-blue-700">Total Slots/Week</div>
                 </div>
-                
+
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <div className="text-3xl font-bold text-green-600">6</div>
                   <div className="text-sm text-green-700">Working Days</div>
                 </div>
               </div>
-              
+
               <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
                 <div className="text-yellow-800 font-semibold text-sm mb-1">Notice</div>
                 <div className="text-yellow-700 text-xs">Please arrive 15 minutes before your scheduled appointment time.</div>
