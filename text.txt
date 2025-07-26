@@ -1,44 +1,331 @@
 
-prompt: i got this blood test report from a hospital. So summarize the report in brief
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo[1].png";
+import { useAuth } from "../contexts/AuthContext"; // Assuming this context still manages broader app login state
+import { useUser, SignOutButton } from "@clerk/clerk-react";
+// QRCode import is removed as it's no longer needed
 
-✅ Normal Findings
+function Header() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
+  // isQrCodeOpen state is removed
 
-Hemoglobin (Hb): 13.56 g/dl – Normal
-Total Leukocyte Count (TLC): 5630 /cumm – Normal
-Differential Counts (Neutrophils, Lymphocytes, etc.): Within normal range
-Platelets: 316,000 /cumm – Normal
-PCV, RBC, MCV, MCH, MCHC: All within normal ranges
-Sodium (Na+): 139 mmol/L – Normal
-Potassium (K+): 4.2 mmol/L – Normal
-Blood Sugar (Random): 77.74 mg/dl – Normal
-Bilirubin (Total and Direct): Normal
-SGOT (AST): 24.81 U/L – Normal
-Cholesterol: 186.61 mg/dl – Normal
+  const { logout } = useAuth(); // Assuming useAuth manages a broader app-level login state, if still needed.
+  const { user } = useUser(); // Get the user object from Clerk's useUser hook
+  const navigate = useNavigate();
 
-⚠️ Slightly Elevated / Abnormal
+  // qrCodeData variable is removed as it's no longer needed
 
-ESR (Erythrocyte Sedimentation Rate): 15 mm/hr
-Slightly elevated (normal for males: 0–10, females: 0–20) – could suggest mild inflammation or infection.
-SGPT (ALT): 85.70 U/L
-High (normal up to 42) – may indicate liver inflammation, fatty liver, or recent liver strain. Consider consulting a doctor for further evaluation.
-Alkaline Phosphatase: 117.74 U/L
-Mildly elevated but still within male reference range (53–128).
+  // Function to close all overlays (mobile menu, dropdowns)
+  const closeAllOverlays = () => {
+    setIsMobileMenuOpen(false);
+    setIsServicesDropdownOpen(false);
+    // setIsQrCodeOpen(false) call is removed
+  };
 
-📝 Conclusion
-Most of your values are within normal limits, indicating overall good health. However, your SGPT is elevated, which could be a sign of liver stress or mild liver dysfunction. This should be monitored or investigated further depending on symptoms or medical history. ESR is also slightly high, possibly indicating mild inflammation.
+  return (
+    <header className="bg-white shadow-md sticky top-0 z-50">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 py-4 flex justify-between items-center">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Link to="/" className="flex items-center" onClick={closeAllOverlays}>
+            <img src={logo} alt="Swastha Logo" className="h-10 sm:h-12 mr-3" />
+            <span className="text-2xl sm:text-3xl font-bold text-blue-700">
+              Swastha
+            </span>
+          </Link>
+        </div>
 
-✅ What to Do
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+          <Link
+            to="/"
+            className="text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300"
+            onClick={closeAllOverlays}
+          >
+            Home
+          </Link>
 
-Exercise: 30–45 mins/day (walking, yoga, or cycling)
-Diet: Eat more fruits, vegetables, whole grains, nuts, and oily fish
-Hydration: Drink 2.5–3 liters of water daily
-Sleep: Get 7–8 hours of quality sleep
-Stress: Practice deep breathing or meditation
-Follow-Up: Repeat liver test (SGPT) in 4–6 weeks
+          {/* Services Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setIsServicesDropdownOpen(true)}
+            onMouseLeave={() => setIsServicesDropdownOpen(false)}
+          >
+            <button className="flex items-center text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300 focus:outline-none py-2">
+              Services
+              <svg
+                className="ml-1 w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
+            </button>
+            {isServicesDropdownOpen && (
+              <div className="absolute left-0 mt-0.5 w-60 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-100">
+                <Link
+                  to="/services/general-checkups"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                  onClick={closeAllOverlays}
+                >
+                  General Check-ups
+                </Link>
+                <Link
+                  to="/services/preventive-care"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                  onClick={closeAllOverlays}
+                >
+                  Preventive Care
+                </Link>
+                <Link
+                  to="/services/telehealth-consultations"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                  onClick={closeAllOverlays}
+                >
+                  Telehealth Consultations
+                </Link>
+                <Link
+                  to="/services/emergency-care"
+                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                  onClick={closeAllOverlays}
+                >
+                  Emergency Care
+                </Link>
+              </div>
+            )}
+          </div>
+          <Link
+            to="/about"
+            className="text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300"
+            onClick={closeAllOverlays}
+          >
+            About Us
+          </Link>
+          <Link
+            to="/contact"
+            className="text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300"
+            onClick={closeAllOverlays}
+          >
+            Contact
+          </Link>
+          <Link
+            to="/appointment"
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-full hover:bg-blue-700 transition duration-300 shadow-md"
+            onClick={closeAllOverlays}
+          >
+            Appointment
+          </Link>
 
-🚫 What to Avoid
-Alcohol
-Fried or junk food
-Sugary drinks and red meat
-Smoking (if applicable)
-Disclaimer: "This is Ai-assisted, not substitute for professional diagnosis"
+          {/* Conditional rendering for Login/Signup or Profile/Logout */}
+          {user ? (
+            <>
+              {/* User Profile Picture - QR code display logic removed */}
+              <div className="flex items-center space-x-2">
+                {user.imageUrl && (
+                  <img
+                    src={user.imageUrl}
+                    alt="User Profile"
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                )}
+              </div>
+              <SignOutButton
+                signOutCallback={() => {
+                  navigate("/auth");
+                  closeAllOverlays();
+                  if (logout) logout(); // Call your custom logout if it exists, uncomment if needed
+                }}
+              >
+                <button className="bg-red-500 text-white px-6 py-2.5 rounded-full hover:bg-red-600 transition duration-300 shadow-md">
+                  Logout
+                </button>
+              </SignOutButton>
+            </>
+          ) : (
+            <Link
+              to="/auth"
+              className="text-blue-600 border border-blue-600 px-6 py-2.5 rounded-full hover:bg-blue-50 transition duration-300 shadow-sm"
+              onClick={closeAllOverlays}
+            >
+              Login/Signup
+            </Link>
+          )}
+        </nav>
+
+        {/* Mobile Menu Button */}
+        <div className="md:hidden flex items-center">
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="text-gray-700 focus:outline-none"
+            aria-label="Toggle mobile menu"
+          >
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {isMobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16m-7 6h7"
+                ></path>
+              )}
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white shadow-lg pb-4">
+          <nav className="flex flex-col items-center space-y-4 pt-4">
+            <Link
+              to="/"
+              className="text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300 py-2"
+              onClick={closeAllOverlays}
+            >
+              Home
+            </Link>
+            <div className="relative w-full text-center">
+              <button
+                onClick={() =>
+                  setIsServicesDropdownOpen(!isServicesDropdownOpen)
+                }
+                className="flex items-center justify-center w-full text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300 py-2 focus:outline-none"
+                aria-expanded={isServicesDropdownOpen}
+              >
+                Services
+                <svg
+                  className={`ml-1 w-4 h-4 transform transition-transform ${
+                    isServicesDropdownOpen ? "rotate-180" : "rotate-0"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </button>
+              {isServicesDropdownOpen && (
+                <div className="mt-2 w-full bg-gray-50 rounded-md py-2 border border-gray-100">
+                  <Link
+                    to="/services/general-checkups"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={closeAllOverlays}
+                  >
+                    General Check-ups
+                  </Link>
+                  <Link
+                    to="/services/preventive-care"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={closeAllOverlays}
+                  >
+                    Preventive Care
+                  </Link>
+                  <Link
+                    to="/services/telehealth-consultations"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={closeAllOverlays}
+                  >
+                    Telehealth Consultations
+                  </Link>
+                  <Link
+                    to="/services/emergency-care"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 hover:text-blue-700 transition duration-200"
+                    onClick={closeAllOverlays}
+                  >
+                    Emergency Care
+                  </Link>
+                </div>
+              )}
+            </div>
+            <Link
+              to="/about"
+              className="text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300 py-2"
+              onClick={closeAllOverlays}
+            >
+              About Us
+            </Link>
+            <Link
+              to="/contact"
+              className="text-gray-700 hover:text-blue-700 text-lg font-medium transition duration-300 py-2"
+              onClick={closeAllOverlays}
+            >
+              Contact
+            </Link>
+            <Link
+              to="/appointment"
+              className="bg-blue-600 text-white px-6 py-2.5 rounded-full hover:bg-blue-700 transition duration-300 shadow-md w-max"
+              onClick={closeAllOverlays}
+            >
+              Appointment
+            </Link>
+
+            {/* Conditional rendering for Mobile Navigation */}
+            {user ? (
+              <>
+                {/* User Profile Picture - QR code display logic removed */}
+                <div className="flex items-center space-x-2">
+                  {user.imageUrl && (
+                    <img
+                      src={user.imageUrl}
+                      alt="User Profile"
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  )}
+                </div>
+                <SignOutButton
+                  signOutCallback={() => {
+                    navigate("/auth");
+                    closeAllOverlays();
+                    if (logout) logout(); // Call your custom logout if it exists, uncomment if needed
+                  }}
+                >
+                  <button className="bg-red-500 text-white px-6 py-2.5 rounded-full hover:bg-red-600 transition duration-300 shadow-md w-max">
+                    Logout
+                  </button>
+                </SignOutButton>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                className="text-blue-600 border border-blue-600 px-6 py-2.5 rounded-full hover:bg-blue-50 transition duration-300 shadow-sm w-max"
+                onClick={closeAllOverlays}
+              >
+                Login/Signup
+              </Link>
+            )}
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}
+
+export default Header;
