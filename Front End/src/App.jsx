@@ -12,7 +12,7 @@ import PreventiveCare from './pages/PreventiveCare';
 import TelehealthConsultations from './pages/TelehealthConsultations';
 import EmergencyCare from './pages/EmergencyCare';
 import MedicalReports from './pages/MedicalReports';          // New import
-import InsuranceDetails from './pages/InsuranceDetails';      // New import
+import InsuranceDetails from './pages/Insurancedetails';      // New import
 import PatientQR from './pages/PatientQR';                    // New import
 import { AuthProvider } from './contexts/AuthContext';
 
