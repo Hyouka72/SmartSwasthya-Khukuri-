@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import hospital1 from "../assets/hospital1.jpg";
 import hospital2 from "../assets/hospital2.jpeg";
 import hospital3 from "../assets/hospital3.jpg";
+import Chat from "../Component/Chat.jsx"; // Ensure Chat component is imported
 
 function Home() {
   // Define an array of slider content objects
@@ -61,12 +62,20 @@ function Home() {
     return () => clearInterval(intervalId);
   }, [sliderContent.length]);
 
+  // State to control chat visibility, initially false (closed)
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // Function to toggle chat visibility
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   return (
     <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 py-16">
       {/* Hero Section */}
       <section
         className="relative bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl p-10 sm:p-16 mb-28 shadow-2xl overflow-hidden
-                           md:flex md:items-center md:justify-between transform hover:scale-[1.005] transition-transform duration-500 ease-in-out"
+                                 md:flex md:items-center md:justify-between transform hover:scale-[1.005] transition-transform duration-500 ease-in-out"
       >
         {/* Decorative background shapes */}
         <div className="absolute top-0 left-0 w-40 h-40 bg-white bg-opacity-15 rounded-full -translate-x-1/3 -translate-y-1/3"></div>
@@ -83,9 +92,9 @@ function Home() {
           <Link
             to="/appointment"
             className="bg-white text-blue-700 hover:bg-blue-800 hover:text-white
-                           font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
-                           transition-all duration-300 transform hover:scale-105 active:scale-100
-                           inline-block"
+                               font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
+                               transition-all duration-300 transform hover:scale-105 active:scale-100
+                               inline-block"
           >
             Book an Appointment
           </Link>
@@ -97,11 +106,11 @@ function Home() {
             <div
               key={index}
               className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out will-change-opacity
-                          ${
-                            index === currentSlideIndex
-                              ? "opacity-100"
-                              : "opacity-0"
-                          }`}
+                               ${
+                                 index === currentSlideIndex
+                                   ? "opacity-100"
+                                   : "opacity-0"
+                               }`}
               style={{ backgroundImage: `url(${slide.image})` }}
               role="img"
               aria-label={slide.alt}
@@ -125,7 +134,7 @@ function Home() {
       {/* About Us Section */}
       <section
         className="bg-white p-14 rounded-xl shadow-lg mb-28 text-gray-800
-                           transform hover:scale-[1.005] transition-transform duration-500 ease-in-out"
+                               transform hover:scale-[1.005] transition-transform duration-500 ease-in-out"
       >
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-10">
           About Swastha
@@ -176,7 +185,7 @@ function Home() {
             className="block bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 w-full max-w-sm"
           >
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              AI Asistant
+              AI Assistant
             </h3>
             <p className="text-gray-600 leading-normal">
               Convenient online medical advice and support.
@@ -215,7 +224,7 @@ function Home() {
       {/* Call to Action / Contact Section */}
       <section
         className="text-center bg-gradient-to-r from-green-500 to-green-700 text-white
-                           rounded-xl p-12 sm:p-18 shadow-xl transform hover:scale-[1.005] transition-transform duration-500 ease-in-out"
+                               rounded-xl p-12 sm:p-18 shadow-xl transform hover:scale-[1.005] transition-transform duration-500 ease-in-out"
       >
         <h2 className="text-3xl sm:text-4xl font-bold mb-9">
           Ready to Take Control of Your Health?
@@ -224,15 +233,60 @@ function Home() {
           Contact us today to schedule your consultation and begin your journey
           to a healthier you.
         </p>
-       <Link to="/contact"> <button
-          className="bg-white text-green-700 hover:bg-green-800 hover:text-white
-                           font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
-                           transition-all duration-300 transform hover:scale-105 active:scale-100"
-        >
-          Get in Touch
-        </button>
+        <Link to="/contact">
+          {" "}
+          <button
+            className="bg-white text-green-700 hover:bg-green-800 hover:text-white
+                               font-bold py-3.5 px-9 rounded-full shadow-lg hover:shadow-xl
+                               transition-all duration-300 transform hover:scale-105 active:scale-100"
+          >
+            Get in Touch
+          </button>
         </Link>
       </section>
+
+      {/* Chat button and component positioned directly at the bottom right */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end space-y-4"> {/* Added flex and items-end for potential stacked elements if chat is also fixed */}
+        <button
+          onClick={toggleChat}
+          className="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105"
+          aria-label={isChatOpen ? "Close chat" : "Open chat"}
+        >
+          {isChatOpen ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
+          )}
+        </button>
+        {/* The Chat component is rendered here. Its internal styling should handle its appearance when isOpen is true. */}
+        <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      </div>
     </div>
   );
 }

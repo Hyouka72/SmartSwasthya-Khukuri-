@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 
 function Chat({ isOpen: propIsOpen, onClose }) {
+  // Determine initial chat open state based on propIsOpen
+  // If propIsOpen is explicitly true, start open. Otherwise, start closed.
   const [isChatOpen, setIsChatOpen] = useState(propIsOpen || false);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
@@ -14,21 +16,25 @@ function Chat({ isOpen: propIsOpen, onClose }) {
   // WARNING: Exposing API keys in frontend code is a security risk.
   const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
+  // This useEffect ensures that if the propIsOpen changes from the parent,
+  // the internal state updates.
   useEffect(() => {
-    if (propIsOpen !== undefined) {
-      setIsChatOpen(propIsOpen);
-    }
+    setIsChatOpen(propIsOpen);
   }, [propIsOpen]);
 
+  // Only show the toggle button if `propIsOpen` is not explicitly true
+  // This means the parent (e.g., Home.jsx) is controlling its visibility,
+  // allowing it to be initially closed and toggled.
+  const showToggleButton = propIsOpen === false || propIsOpen === undefined;
+
+  // The toggle function is now primarily for the floating button.
+  // When chat is full-screen, the close action is typically handled by `onClose` prop from parent.
   const toggleChat = () => {
     const newState = !isChatOpen;
     setIsChatOpen(newState);
     if (!newState && onClose) {
-      onClose();
+      onClose(); // Notify parent if chat is closed by its own button
     }
-    // Optionally clear messages when chat is closed, if "no history" implies session-based history.
-    // If "no history" means no previous context for AI, but display messages for current open session is fine,
-    // then no need to clear here. For this implementation, we keep messages for the current open session.
   };
 
   const scrollToBottom = () => {
@@ -67,12 +73,9 @@ function Chat({ isOpen: propIsOpen, onClose }) {
       return;
     }
     if (!API_KEY) {
-      // Using a custom message box instead of alert() as per instructions
-      // For a real app, you'd implement a proper modal or toast notification
       const errorMessage =
         "API Key is missing! Please set VITE_GEMINI_API_KEY in your .env file.";
       console.error(errorMessage);
-      // You could update a state variable to show this message in the UI
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -107,7 +110,6 @@ function Chat({ isOpen: propIsOpen, onClose }) {
 
     try {
       let parts = [];
-      // Changed model to gemini-2.0-flash as requested
       let modelName = "gemini-2.0-flash";
 
       if (inputText.trim()) {
@@ -115,17 +117,15 @@ function Chat({ isOpen: propIsOpen, onClose }) {
       }
 
       if (selectedImage && imagePreviewUrl) {
-        // If an image is present, include it in the parts
         const base64ImageData = imagePreviewUrl.split(",")[1];
         parts.push({
           inlineData: {
-            mimeType: selectedImage.type || "image/png", // Fallback to png if type is unknown
+            mimeType: selectedImage.type || "image/png",
             data: base64ImageData,
           },
         });
       }
 
-      // If only image is sent, provide a default prompt for narration
       if (!inputText.trim() && selectedImage) {
         parts.unshift({
           text: "Describe this image in detail and provide a brief narration.",
@@ -192,11 +192,14 @@ function Chat({ isOpen: propIsOpen, onClose }) {
     }
   };
 
+  // Determine chat window classes based on `propIsOpen`
+  const chatWindowClasses =
+    propIsOpen === true
+      ? "fixed inset-0 w-full h-full rounded-none" // Full screen when propIsOpen is true
+      : "fixed bottom-24 right-8 w-80 md:w-96 h-[600px] rounded-lg shadow-xl"; // Floating when propIsOpen is false/undefined
+
   return (
     <div className="relative h-screen bg-gray-100 font-inter">
-      {/* Tailwind CSS CDN and Google Fonts links should typically be in public/index.html or the main CSS file, not here */}
-      {/* <script src="https://cdn.tailwindcss.com"></script> */}
-      {/* <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /> */}
       {/* Custom CSS for scrollbar styling */}
       <style>
         {`
@@ -219,73 +222,84 @@ function Chat({ isOpen: propIsOpen, onClose }) {
         `}
       </style>
 
-      {/* Floating Chat Button */}
-      <button
-        onClick={toggleChat}
-        className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300 ease-in-out z-50"
-        aria-label={isChatOpen ? "Close Chat" : "Open Chat"}
-      >
-        {isChatOpen ? (
-          // Close icon when chat is open
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        ) : (
-          // Chat icon when chat is closed
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-            />
-          </svg>
-        )}
-      </button>
+      {/* Floating Chat Button - only render if not full screen (controlled by parent as false/undefined) */}
+      {showToggleButton && (
+        <button
+          onClick={toggleChat}
+          className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300 ease-in-out z-50"
+          aria-label={isChatOpen ? "Close Chat" : "Open Chat"}
+        >
+          {isChatOpen ? (
+            // Close icon when chat is open
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            // Chat icon when chat is closed
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+          )}
+        </button>
+      )}
 
       {/* Chat Window - conditionally rendered based on isChatOpen state */}
       {isChatOpen && (
-        <div className="fixed bottom-24 right-8 w-80 md:w-96 h-[600px] bg-white rounded-lg shadow-xl flex flex-col z-50 overflow-hidden border border-gray-200">
+        <div
+          className={`bg-white flex flex-col z-50 overflow-hidden border border-gray-200 ${chatWindowClasses}`}
+        >
           {/* Chat Header */}
           <div className="flex items-center justify-between p-4 bg-blue-600 text-white rounded-t-lg shadow-md">
             <h3 className="text-lg font-semibold">AI Health Assistant</h3>
-            <button
-              onClick={toggleChat}
-              className="p-1 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
-              aria-label="Close Chat"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
+            {/* Show close button only if:
+              1. The chat is in its floating state (propIsOpen is false/undefined), or
+              2. An 'onClose' function is provided by the parent (essential for full-screen chat to close).
+              Clicking this button will call the 'onClose' prop if it exists, otherwise it will use the internal 'toggleChat'.
+            */}
+            {(propIsOpen === false || onClose) && (
+              <button
+                onClick={onClose || toggleChat} // Use onClose prop if available, otherwise use internal toggle
+                className="p-1 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+                aria-label="Close Chat"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Messages Area */}

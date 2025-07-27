@@ -1,102 +1,66 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom"; // Keep useParams for initial load if needed, but primary interaction shifts
 import { useUser } from "@clerk/clerk-react";
+import axios from "axios";
 
 function MedicalReports() {
   const { user } = useUser();
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [medicalReports, setMedicalReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // We will manage selectedReport state directly, not via URL params for primary interaction
   const [selectedReport, setSelectedReport] = useState(null);
 
-  // Sample medical reports data
-  const medicalReports = [
-    {
-      id: 1,
-      title: "Annual Physical Examination",
-      date: "2024-07-15",
-      doctor: "Dr. Sarah Johnson",
-      category: "checkup",
-      status: "completed",
-      summary: "Regular annual checkup with blood work and vitals assessment.",
-      details: {
-        vitals: {
-          bloodPressure: "120/80 mmHg",
-          heartRate: "72 bpm",
-          temperature: "98.6°F",
-          weight: "165 lbs",
-          height: "5'8\""
-        },
-        notes: "Patient is in good health. All vitals within normal range. Recommended to continue current lifestyle habits.",
-        followUp: "Next annual checkup in 12 months"
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080/api";
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        setLoading(true);
+        const allReportsResponse = await axios.get(`${VITE_BACKEND_URL}/patient-reports`);
+        const fetchedAllReports = allReportsResponse.data;
+
+        const adaptedReports = fetchedAllReports.map(report => ({
+          id: report.id,
+          title: report.reportTitle,
+          date: report.reportDate,
+          doctor: report.doctorName,
+          category: report.category ? report.category.toLowerCase().replace(/\s/g, '') : 'uncategorized',
+          status: report.status,
+          summary: report.notes || "No summary available.",
+          details: {
+            vitals: (report.bloodPressure || report.heartRate || report.temperature || report.weight || report.height) ? {
+              bloodPressure: report.bloodPressure,
+              heartRate: report.heartRate,
+              temperature: report.temperature,
+              weight: report.weight,
+              height: report.height
+            } : null,
+            results: report.category && report.category.toLowerCase().includes("lab") ? [] : null,
+            findings: report.category && report.category.toLowerCase().includes("imaging") ? (report.notes || "") : null,
+            impression: report.category && report.category.toLowerCase().includes("imaging") ? "" : null,
+            recommendations: report.category && report.category.toLowerCase().includes("consultations") && report.notes ? [report.notes] : null,
+            vaccines: report.category && report.category.toLowerCase().includes("vaccinations") ? [] : null,
+            notes: report.notes,
+            followUp: report.followUp
+          },
+          imageUrl: report.imageUrl,
+          publicId: report.publicId,
+        }));
+        setMedicalReports(adaptedReports);
+
+      } catch (e) {
+        console.error("Failed to fetch medical reports:", e);
+        setError("Failed to load medical reports. Please try again later.");
+      } finally {
+        setLoading(false);
       }
-    },
-    {
-      id: 2,
-      title: "Blood Test Results",
-      date: "2024-07-10",
-      doctor: "Dr. Sarah Johnson",
-      category: "lab",
-      status: "completed",
-      summary: "Comprehensive metabolic panel and lipid profile.",
-      details: {
-        results: [
-          { test: "Total Cholesterol", value: "180 mg/dL", range: "< 200 mg/dL", status: "normal" },
-          { test: "HDL Cholesterol", value: "55 mg/dL", range: "> 40 mg/dL", status: "normal" },
-          { test: "LDL Cholesterol", value: "110 mg/dL", range: "< 130 mg/dL", status: "normal" },
-          { test: "Glucose", value: "90 mg/dL", range: "70-100 mg/dL", status: "normal" },
-          { test: "Hemoglobin A1C", value: "5.2%", range: "< 5.7%", status: "normal" }
-        ],
-        notes: "All lab values are within normal limits. Continue current diet and exercise routine."
-      }
-    },
-    {
-      id: 3,
-      title: "Chest X-Ray",
-      date: "2024-06-20",
-      doctor: "Dr. Michael Chen",
-      category: "imaging",
-      status: "completed",
-      summary: "Routine chest X-ray for pre-employment screening.",
-      details: {
-        findings: "Clear lung fields bilaterally. Heart size normal. No acute abnormalities.",
-        impression: "Normal chest X-ray",
-        notes: "No further action required."
-      }
-    },
-    {
-      id: 4,
-      title: "Cardiology Consultation",
-      date: "2024-06-01",
-      doctor: "Dr. Robert Davis",
-      category: "consultation",
-      status: "completed",
-      summary: "Follow-up consultation for heart murmur evaluation.",
-      details: {
-        findings: "Innocent heart murmur confirmed. EKG shows normal rhythm.",
-        recommendations: [
-          "Continue regular exercise",
-          "Annual cardiology follow-up",
-          "Monitor for any symptoms"
-        ],
-        notes: "Patient educated about innocent murmur. No restrictions on activities."
-      }
-    },
-    {
-      id: 5,
-      title: "Vaccination Record Update",
-      date: "2024-05-15",
-      doctor: "Dr. Emily Wilson",
-      category: "vaccination",
-      status: "completed",
-      summary: "COVID-19 booster and flu vaccination administered.",
-      details: {
-        vaccines: [
-          { name: "COVID-19 Booster (Pfizer)", date: "2024-05-15", lot: "EW0182" },
-          { name: "Influenza (Quadrivalent)", date: "2024-05-15", lot: "FLU2024" }
-        ],
-        notes: "No adverse reactions observed. Patient advised about potential mild side effects."
-      }
-    }
-  ];
+    };
+
+    fetchReports();
+  }, [VITE_BACKEND_URL]); // Removed reportId from dependency array as we're not relying on URL param for detail
 
   const categories = [
     { id: "all", name: "All Reports", count: medicalReports.length },
@@ -107,9 +71,60 @@ function MedicalReports() {
     { id: "vaccination", name: "Vaccinations", count: medicalReports.filter(r => r.category === "vaccination").length }
   ];
 
-  const filteredReports = selectedCategory === "all" 
-    ? medicalReports 
+  const filteredReports = selectedCategory === "all"
+    ? medicalReports
     : medicalReports.filter(report => report.category === selectedCategory);
+
+  // Function to handle clicking on a report from the list
+  const handleReportClick = async (reportId) => {
+    try {
+      // Fetch the full details of the clicked report
+      setLoading(true); // Show loading when fetching single report
+      const singleReportResponse = await axios.get(`${VITE_BACKEND_URL}/patient-reports/${reportId}`);
+      const fetchedSingleReport = singleReportResponse.data;
+
+      const adaptedSingleReport = {
+        id: fetchedSingleReport.id,
+        title: fetchedSingleReport.reportTitle,
+        date: fetchedSingleReport.reportDate,
+        doctor: fetchedSingleReport.doctorName,
+        category: fetchedSingleReport.category ? fetchedSingleReport.category.toLowerCase().replace(/\s/g, '') : 'uncategorized',
+        status: fetchedSingleReport.status,
+        summary: fetchedSingleReport.notes || "No summary available.",
+        details: {
+          vitals: (fetchedSingleReport.bloodPressure || fetchedSingleReport.heartRate || fetchedSingleReport.temperature || fetchedSingleReport.weight || fetchedSingleReport.height) ? {
+            bloodPressure: fetchedSingleReport.bloodPressure,
+            heartRate: fetchedSingleReport.heartRate,
+            temperature: fetchedSingleReport.temperature,
+            weight: fetchedSingleReport.weight,
+            height: fetchedSingleReport.height
+          } : null,
+          results: fetchedSingleReport.category && fetchedSingleReport.category.toLowerCase().includes("lab") ? [] : null,
+          findings: fetchedSingleReport.category && fetchedSingleReport.category.toLowerCase().includes("imaging") ? (fetchedSingleReport.notes || "") : null,
+          impression: fetchedSingleReport.category && fetchedSingleReport.category.toLowerCase().includes("imaging") ? "" : null,
+          recommendations: fetchedSingleReport.category && fetchedSingleReport.category.toLowerCase().includes("consultations") && fetchedSingleReport.notes ? [fetchedSingleReport.notes] : null,
+          vaccines: fetchedSingleReport.category && fetchedSingleReport.category.toLowerCase().includes("vaccinations") ? [] : null,
+          notes: fetchedSingleReport.notes,
+          followUp: fetchedSingleReport.followUp
+        },
+        imageUrl: fetchedSingleReport.imageUrl,
+        publicId: fetchedSingleReport.publicId,
+      };
+      setSelectedReport(adaptedSingleReport);
+    } catch (e) {
+      console.error("Failed to fetch single report details:", e);
+      setError("Failed to load report details. Please try again.");
+    } finally {
+      setLoading(false); // Hide loading after fetching single report
+    }
+  };
+
+  // Function to close the detail view and return to the list
+  const handleCloseDetail = () => {
+    setSelectedReport(null);
+    setError(null); // Clear any errors from detail view
+  };
+
 
   const getCategoryIcon = (category) => {
     switch (category) {
@@ -165,6 +180,24 @@ function MedicalReports() {
     }
   };
 
+  // Centralized loading/error handling for the whole page
+  if (loading && !selectedReport) { // Show full page loading only when no report is selected yet
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-700">Loading medical reports...</p>
+      </div>
+    );
+  }
+
+  // Display top-level error if fetching all reports failed
+  if (error && !selectedReport) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Breadcrumb */}
@@ -219,15 +252,28 @@ function MedicalReports() {
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content Area */}
           <div className="flex-1">
+            {/* Conditional loading/error for the detail view specifically */}
+            {loading && selectedReport && ( // Only show loading spinner within the detail view area
+              <div className="flex items-center justify-center p-8">
+                <p className="text-gray-700">Loading report details...</p>
+              </div>
+            )}
+            {error && selectedReport && ( // Only show error within the detail view area
+              <div className="flex items-center justify-center p-8">
+                <p className="text-red-600">{error}</p>
+              </div>
+            )}
+
             {!selectedReport ? (
+              // Report List View
               <div className="space-y-4">
                 {filteredReports.map((report) => (
-                  <div
+                  <button
                     key={report.id}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
-                    onClick={() => setSelectedReport(report)}
+                    onClick={() => handleReportClick(report.id)} // Changed from Link to button with onClick
+                    className="block w-full text-left bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-4">
@@ -260,7 +306,7 @@ function MedicalReports() {
                         </svg>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 ))}
 
                 {filteredReports.length === 0 && (
@@ -274,14 +320,15 @@ function MedicalReports() {
                 )}
               </div>
             ) : (
-              /* Report Detail View */
+              // Report Detail View
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 {/* Report Header */}
                 <div className="p-6 border-b border-gray-200">
                   <div className="flex items-center justify-between mb-4">
+                    {/* Changed from Link to button for closing the detail view */}
                     <button
-                      onClick={() => setSelectedReport(null)}
-                      className="flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      onClick={handleCloseDetail}
+                      className="flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -297,7 +344,7 @@ function MedicalReports() {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start space-x-4">
                     <div className={`p-3 rounded-lg ${
                       selectedReport.category === "checkup" ? "bg-green-100 text-green-600" :
@@ -343,18 +390,20 @@ function MedicalReports() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Vital Signs</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                           {Object.entries(selectedReport.details.vitals).map(([key, value]) => (
-                            <div key={key} className="bg-gray-50 p-3 rounded-lg">
-                              <div className="text-sm text-gray-600 capitalize">
-                                {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                            value !== null && (
+                              <div key={key} className="bg-gray-50 p-3 rounded-lg">
+                                <div className="text-sm text-gray-600 capitalize">
+                                  {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                                </div>
+                                <div className="text-lg font-semibold text-gray-900">{value}</div>
                               </div>
-                              <div className="text-lg font-semibold text-gray-900">{value}</div>
-                            </div>
+                            )
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {selectedReport.category === "lab" && selectedReport.details.results && (
+                    {selectedReport.category === "lab" && selectedReport.details.results && selectedReport.details.results.length > 0 && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Test Results</h3>
                         <div className="overflow-x-auto">
@@ -391,7 +440,7 @@ function MedicalReports() {
                       </div>
                     )}
 
-                    {selectedReport.category === "consultation" && selectedReport.details.recommendations && (
+                    {selectedReport.category === "consultation" && selectedReport.details.recommendations && selectedReport.details.recommendations.length > 0 && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommendations</h3>
                         <ul className="list-disc list-inside space-y-2 text-gray-700">
@@ -402,7 +451,7 @@ function MedicalReports() {
                       </div>
                     )}
 
-                    {selectedReport.category === "vaccination" && selectedReport.details.vaccines && (
+                    {selectedReport.category === "vaccination" && selectedReport.details.vaccines && selectedReport.details.vaccines.length > 0 && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Vaccines Administered</h3>
                         <div className="space-y-3">
@@ -450,6 +499,27 @@ function MedicalReports() {
                         <p className="text-blue-800">{selectedReport.details.followUp}</p>
                       </div>
                     )}
+
+                    {/* --- Image Display Section --- */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Associated Image</h3>
+                        {selectedReport.imageUrl ? (
+                            <img
+                                src={selectedReport.imageUrl}
+                                alt={`Image for ${selectedReport.title}`}
+                                className="max-w-full h-auto rounded-lg shadow-md"
+                            />
+                        ) : (
+                            <div className="bg-gray-100 text-gray-500 flex items-center justify-center p-8 rounded-lg shadow-inner border border-gray-200">
+                                <svg className="w-10 h-10 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p className="text-lg font-medium">No image available for this report.</p>
+                            </div>
+                        )}
+                    </div>
+                    {/* --- End Image Display Section --- */}
+
                   </div>
                 </div>
               </div>

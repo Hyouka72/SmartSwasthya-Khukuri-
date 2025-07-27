@@ -1,54 +1,91 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, User, Mail, Phone, MapPin, ChevronDown } from 'lucide-react';
+import axios from 'axios'; // Import Axios
 
 const AppointmentBooking = () => {
+  const [fullName, setFullName] = useState('Your name');
+  const [age, setAge] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('+977');
+  const [gender, setGender] = useState(''); // New state for gender
+  const [reasonForAppointment, setReasonForAppointment] = useState(''); // New state for reason
+
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState('');
-  const [selectedDate, setSelectedDate] = useState('07/31/2025');
+  const [selectedDate, setSelectedDate] = useState('2025-07-31'); // YYYY-MM-DD format for input type="date"
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedHospital, setSelectedHospital] = useState('');
   const [showDoctorProfile, setShowDoctorProfile] = useState(false);
 
-  const hospitals = [
-    { id: 1, name: 'Swastha Medical Center', location: 'Kathmandu, Nepal' },
-    { id: 2, name: 'Grande International Hospital', location: 'Dhapasi, Kathmandu' },
-    { id: 3, name: 'Nepal Mediciti Hospital', location: 'Lalitpur, Nepal' },
-    { id: 4, name: 'Tribhuvan University Teaching Hospital', location: 'Maharajgunj, Kathmandu' }
-  ];
+  // Data fetched from backend
+  const [hospitals, setHospitals] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [doctorsByDepartment, setDoctorsByDepartment] = useState({}); // Stores doctors grouped by department
+  const [timeSlots, setTimeSlots] = useState([]); // This will hold the fetched time slots
 
-  const departments = [
-    'Pediatrics',
-    'Cardiology',
-    'Orthopedics',
-    'Neurology',
-    'Dermatology',
-    'Internal Medicine'
-  ];
+  const API_BASE_URL = 'http://localhost:8080/api'; // Adjust if your backend runs on a different port
 
-  const doctors = {
-    'Pediatrics': [
-      { name: 'Dr. Emily Brown', specialization: 'Pediatric Care' },
-      { name: 'Dr. Rajesh Sharma', specialization: 'Child Development' },
-      { name: 'Dr. Sarah Johnson', specialization: 'Pediatric Surgery' }
-    ],
-    'Cardiology': [
-      { name: 'Dr. Michael Chen', specialization: 'Interventional Cardiology' },
-      { name: 'Dr. Priya Patel', specialization: 'Cardiac Surgery' }
-    ],
-    'Orthopedics': [
-      { name: 'Dr. David Wilson', specialization: 'Joint Replacement' },
-      { name: 'Dr. Lisa Anderson', specialization: 'Sports Medicine' }
-    ]
-  };
+  // Fetch Hospitals
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/hospitals`)
+      .then(response => {
+        setHospitals(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching hospitals:', error);
+      });
+  }, []);
 
-  const timeSlots = [
-    { time: '09:00 - 09:45 AM', value: '09:00-09:45' },
-    { time: '10:00 - 10:45 AM', value: '10:00-10:45' },
-    { time: '11:00 - 11:45 AM', value: '11:00-11:45' },
-    { time: '02:00 - 02:45 PM', value: '14:00-14:45' },
-    { time: '03:00 - 03:45 PM', value: '15:00-15:45' },
-    { time: '04:00 - 04:45 PM', value: '16:00-16:45' }
-  ];
+  // Fetch Departments
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/departments`)
+      .then(response => {
+        setDepartments(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching departments:', error);
+      });
+  }, []);
+
+  // Fetch Doctors when department changes
+  useEffect(() => {
+    if (selectedDepartment) {
+      axios.get(`${API_BASE_URL}/doctors?department=${selectedDepartment}`)
+        .then(response => {
+          setDoctorsByDepartment(prevState => ({
+            ...prevState,
+            [selectedDepartment]: response.data
+          }));
+        })
+        .catch(error => {
+          console.error(`Error fetching doctors for ${selectedDepartment}:`, error);
+        });
+    } else {
+      setSelectedDoctor(''); // Clear selected doctor if no department is chosen
+    }
+  }, [selectedDepartment]);
+
+  // Fetch Time Slots
+  // This useEffect will now *always* fetch time slots.
+  // In a real application, you might want to fetch time slots based on
+  // selected doctor and date for real-time availability.
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/timeslot`)
+      .then(response => {
+        // Assuming your backend returns an array of objects like:
+        // [{ value: "09:00", time: "09:00 AM" }, { value: "09:30", time: "09:30 AM" }]
+        // If your backend returns just strings like ["09:00 AM", "09:30 AM"],
+        // you would need to transform the data here:
+        // const formattedSlots = response.data.map(timeStr => ({
+        //   value: timeStr.split(' ')[0], // Example: '09:00'
+        //   time: timeStr // Example: '09:00 AM'
+        // }));
+        // setTimeSlots(formattedSlots);
+        setTimeSlots(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching time slots:', error);
+      });
+  }, []); // Empty dependency array means this runs once on component mount
 
   useEffect(() => {
     if (selectedDoctor && selectedTime) {
@@ -64,6 +101,47 @@ const AppointmentBooking = () => {
     setSelectedTime('');
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const appointmentData = {
+      fullName,
+      age: parseInt(age), // Convert age to number
+      phoneNumber,
+      gender,
+      selectedHospital,
+      selectedDepartment,
+      selectedDoctor,
+      selectedDate,
+      selectedTime,
+      reasonForAppointment,
+    };
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/appointments/book`, appointmentData);
+      alert(response.data); // Show success message
+      // Optionally reset form here
+      // setFullName('');
+      // setAge('');
+      // setPhoneNumber('');
+      // setGender('');
+      // setReasonForAppointment('');
+      // setSelectedDepartment('');
+      // setSelectedDoctor('');
+      // setSelectedDate('2025-07-31');
+      // setSelectedTime('');
+      // setSelectedHospital('');
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      alert('Failed to book appointment. Please try again.');
+    }
+  };
+
+  // Find the selected doctor's full profile to display specialization
+  const currentDoctor = selectedDepartment && selectedDoctor
+    ? doctorsByDepartment[selectedDepartment]?.find(d => d.name === selectedDoctor)
+    : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
@@ -75,7 +153,7 @@ const AppointmentBooking = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Book Your Appointment</h1>
-              <p className="text-gray-600">Welcome, <span className="text-blue-600 font-semibold">Sanjog Gautam</span>! Please fill out the form below to schedule your visit.</p>
+              <p className="text-gray-600">Welcome, <span className="text-blue-600 font-semibold">{fullName}</span>! Please fill out the form below to schedule your visit.</p>
             </div>
           </div>
         </div>
@@ -97,7 +175,8 @@ const AppointmentBooking = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Sanjog Gautam"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -107,21 +186,42 @@ const AppointmentBooking = () => {
                     Age <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="Age"
-                    defaultValue=""
+                    type="number" // Changed to number
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
-                <div className="md:col-span-2">
+                <div> {/* Added this div for Phone Number for grid consistency */}
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone Number
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
-                    defaultValue="+977 98 1234 5678"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                </div>
+
+                <div> {/* Added this div for Gender */}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Gender <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                    >
+                      <option value="">-- Select Gender --</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -189,7 +289,7 @@ const AppointmentBooking = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white disabled:bg-gray-100"
                     >
                       <option value="">-- Select Doctor --</option>
-                      {selectedDepartment && doctors[selectedDepartment]?.map((doctor) => (
+                      {selectedDepartment && doctorsByDepartment[selectedDepartment]?.map((doctor) => (
                         <option key={doctor.name} value={doctor.name}>{doctor.name}</option>
                       ))}
                     </select>
@@ -203,7 +303,7 @@ const AppointmentBooking = () => {
                   </label>
                   <input
                     type="date"
-                    value="2025-07-31"
+                    value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -237,11 +337,16 @@ const AppointmentBooking = () => {
                 <textarea
                   rows={4}
                   placeholder="Please describe your symptoms, concerns, or the reason for your visit..."
+                  value={reasonForAppointment}
+                  onChange={(e) => setReasonForAppointment(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 ></textarea>
               </div>
 
-              <button className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
+              <button
+                onClick={handleSubmit} // Call handleSubmit on click
+                className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+              >
                 Book Appointment
               </button>
             </div>
@@ -286,7 +391,7 @@ const AppointmentBooking = () => {
 
                   <h4 className="font-bold text-gray-900 text-lg">{selectedDoctor}</h4>
                   <p className="text-blue-600 text-sm mb-2">
-                    {selectedDepartment && doctors[selectedDepartment]?.find(d => d.name === selectedDoctor)?.specialization}
+                    {currentDoctor?.specialization}
                   </p>
                   <p className="text-gray-600 text-sm mb-4">{selectedDepartment} Department</p>
 

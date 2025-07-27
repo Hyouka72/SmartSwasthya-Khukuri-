@@ -23,8 +23,13 @@ import {
   Heart,
   Thermometer,
   QrCode,
+  Download,
+  Share,
+  ArrowLeft,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { QrReader } from "react-qr-reader";
+import axios from "axios";
 
 // Mock data for demonstration
 const mockAppointments = [
@@ -149,65 +154,85 @@ const DoctorDashboard = () => {
   const [showPatientModal, setShowPatientModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
 
-  // New states for QR scanner
+  // New states for QR scanner and patient report
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scannedData, setScannedData] = useState(null);
   const [scannerError, setScannerError] = useState(null);
+  const [patientReport, setPatientReport] = useState(null);
+  const [patientData, setPatientData] = useState(null);
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
+  const [reportError, setReportError] = useState(null);
 
-  // Effect to open patient modal when scannedData changes
+  // Backend URL from environment
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080/api";
+
+  // Function to fetch patient data from backend
+  const fetchPatientData = async (patientId) => {
+    try {
+      setIsLoadingReport(true);
+      setReportError(null);
+      
+      // Fetch patient basic data
+      const patientResponse = await axios.get(`${BACKEND_URL}/patients/1`);
+      const patientInfo = patientResponse.data;
+      setPatientData(patientInfo);
+      
+      // Fetch patient report
+      const reportResponse = await axios.get(`${BACKEND_URL}/patient-reports/1`);
+      const reportInfo = reportResponse.data;
+      setPatientReport(reportInfo);
+      
+      return { patientInfo, reportInfo };
+    } catch (error) {
+      console.error("Error fetching patient data:", error);
+      setReportError(error.response?.data?.message || "Failed to fetch patient data");
+      return null;
+    } finally {
+      setIsLoadingReport(false);
+    }
+  };
+
+  // Effect to handle scanned QR data
   useEffect(() => {
     if (scannedData) {
-      let patientId = null;
-
-      try {
-        // Try to parse as JSON first (for complex QR codes)
-        const parsedData = JSON.parse(scannedData);
-        patientId = parsedData.patientId || parsedData.memberNumber;
-
-        // If memberNumber format, convert it to match our patient IDs
-        if (patientId && patientId.startsWith("SW")) {
-          // This is a member number format, need to find by member number or convert
-          // For now, let's search by name or email as well
-          const patient = mockPatients.find(
-            (p) =>
-              p.id === patientId ||
-              p.name === parsedData.name ||
-              p.email === parsedData.email
-          );
-
-          if (patient) {
-            setSelectedPatient(patient);
-            setShowPatientModal(true);
+      const handleScannedData = async () => {
+        try {
+          // Check if scanned data contains patient ID
+          if (scannedData === "user_30PPJDp4cUoAH1sXoYTCdaSpyWM") {
+            // For the specific user, use patient ID 1
+            await fetchPatientData(1);
             setIsScannerOpen(false);
-            setScannedData(null);
+            setActiveTab("patient-report");
           } else {
-            alert(
-              `Patient with ID "${patientId}" not found. Parsed data: ${JSON.stringify(
-                parsedData,
-                null,
-                2
-              )}`
-            );
-            setScannedData(null);
+            // Try to extract patient ID from scanned data
+            let patientId = null;
+            
+            try {
+              // Try to parse as JSON first
+              const parsedData = JSON.parse(scannedData);
+              patientId = parsedData.patientId || parsedData.id;
+            } catch (error) {
+              // If not JSON, treat as direct patient ID
+              patientId = scannedData.replace(/\D/g, ''); // Extract numbers only
+            }
+            
+            if (patientId) {
+              await fetchPatientData(patientId);
+              setIsScannerOpen(false);
+              setActiveTab("patient-report");
+            } else {
+              alert(`Invalid QR code format. Scanned data: "${scannedData}"`);
+            }
           }
+        } catch (error) {
+          console.error("Error processing scanned data:", error);
+          alert("Error processing QR code data");
         }
-      } catch (error) {
-        // If it's not JSON, treat as simple patient ID
-        patientId = scannedData.trim();
-        const patient = mockPatients.find((p) => p.id === patientId);
+        
+        setScannedData(null);
+      };
 
-        if (patient) {
-          setSelectedPatient(patient);
-          setShowPatientModal(true);
-          setIsScannerOpen(false);
-          setScannedData(null);
-        } else {
-          alert(
-            `Patient with ID "${patientId}" not found. Scanned data: "${scannedData}"`
-          );
-          setScannedData(null);
-        }
-      }
+      handleScannedData();
     }
   }, [scannedData]);
 
@@ -339,6 +364,7 @@ const DoctorDashboard = () => {
                 { id: "appointments", label: "Appointments", icon: Calendar },
                 { id: "patients", label: "Patients", icon: Users },
                 { id: "scan-qr", label: "Scan QR Code", icon: QrCode },
+                { id: "patient-report", label: "Patient Report", icon: FileText },
                 { id: "messages", label: "Messages", icon: MessageSquare },
                 { id: "reports", label: "Reports", icon: FileText },
                 { id: "settings", label: "Settings", icon: Settings },
@@ -377,7 +403,7 @@ const DoctorDashboard = () => {
                   Dashboard
                 </h1>
                 <p className="text-gray-600">
-                  Welcome back, Dr. Smith. Here's your daily overview.
+                  Welcome back, Dr.Shyam. Here's your daily overview.
                 </p>
               </div>
 
@@ -388,14 +414,12 @@ const DoctorDashboard = () => {
                   title="Today's Appointments"
                   value="12"
                   color="blue"
-                  trend="+8% from yesterday"
                 />
                 <StatCard
                   icon={Users}
                   title="Total Patients"
                   value="156"
                   color="green"
-                  trend="+12% this month"
                 />
                 <StatCard
                   icon={Clock}
@@ -408,7 +432,6 @@ const DoctorDashboard = () => {
                   title="Completed Today"
                   value="8"
                   color="red"
-                  trend="+15% efficiency"
                 />
               </div>
 
@@ -546,12 +569,7 @@ const DoctorDashboard = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Urgency
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                 
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -559,7 +577,7 @@ const DoctorDashboard = () => {
                         <tr key={apt.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text- sm font-medium text-gray-900">
                                 {apt.patientName}
                               </div>
                               <div className="text-sm text-gray-500">
@@ -582,41 +600,7 @@ const DoctorDashboard = () => {
                               {apt.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`text-sm font-medium ${getUrgencyColor(
-                                apt.urgency
-                              )}`}
-                            >
-                              {apt.urgency}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => setSelectedAppointment(apt)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleAppointmentAction(apt.id, "confirm")
-                                }
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleAppointmentAction(apt.id, "cancel")
-                                }
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
+                  
                         </tr>
                       ))}
                     </tbody>
@@ -689,51 +673,6 @@ const DoctorDashboard = () => {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "messages" && (
-            <div className="space-y-6">
-              <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
-              <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No messages yet
-                </h3>
-                <p className="text-gray-600">
-                  Patient messages will appear here
-                </p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "reports" && (
-            <div className="space-y-6">
-              <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-              <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Generate Reports
-                </h3>
-                <p className="text-gray-600">
-                  Create patient reports, medical summaries, and analytics
-                </p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "settings" && (
-            <div className="space-y-6">
-              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-              <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Doctor Settings
-                </h3>
-                <p className="text-gray-600">
-                  Manage your profile, preferences, and clinic information
-                </p>
               </div>
             </div>
           )}
@@ -851,10 +790,343 @@ const DoctorDashboard = () => {
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-4 h-4 mt-0.5 mr-2 text-blue-600" />
-                      Patient profile will open automatically when found
+                      Patient report will open automatically when QR code is recognized
                     </li>
                   </ul>
+                  
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
+                    <h4 className="text-sm font-semibold text-blue-900 mb-2">
+                      Test QR Code
+                    </h4>
+                    <p className="text-xs text-blue-700 mb-2">
+                      For testing purposes, scan this code: 
+                    </p>
+                    <code className="text-xs bg-blue-100 px-2 py-1 rounded text-blue-800">
+                      user_30PPJDp4cUoAH1sXoYTCdaSpyWM
+                    </code>
+                  </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Patient Report View */}
+          {activeTab === "patient-report" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => setActiveTab("scan-qr")}
+                    className="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                  >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Back to Scanner
+                  </button>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Patient Report
+                  </h1>
+                </div>
+                {patientReport && (
+                  <div className="flex space-x-2">
+                    <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download PDF
+                    </button>
+                    <button className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                      <Share className="w-4 h-4 mr-2" />
+                      Share
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {isLoadingReport && (
+                <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading patient report...</p>
+                </div>
+              )}
+
+              {reportError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                  <div className="flex items-center">
+                    <AlertCircle className="w-6 h-6 text-red-600 mr-3" />
+                    <div>
+                      <h3 className="text-lg font-medium text-red-800">
+                        Error Loading Report
+                      </h3>
+                      <p className="text-red-600 mt-1">{reportError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {patientData && patientReport && !isLoadingReport && (
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  {/* Report Header */}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h2 className="text-2xl font-bold mb-2">
+                          {patientReport.reportTitle}
+                        </h2>
+                        <div className="flex items-center space-x-4 text-blue-100">
+                          <div className="flex items-center">
+                            <CalendarIcon className="w-4 h-4 mr-1" />
+                            {new Date(patientReport.reportDate).toLocaleDateString()}
+                          </div>
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            {patientReport.doctorName}
+                          </div>
+                        </div>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          patientReport.status === "pending"
+                            ? "bg-yellow-500 text-white"
+                            : patientReport.status === "completed"
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-500 text-white"
+                        }`}
+                      >
+                        {patientReport.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-8">
+                    {/* Patient Information */}
+                    <div className="mb-8">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
+                        Patient Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <label className="text-sm font-medium text-gray-600">
+                            Full Name
+                          </label>
+                          <p className="text-lg font-semibold text-gray-900 mt-1">
+                            {patientData.name}
+                          </p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <label className="text-sm font-medium text-gray-600">
+                            Age
+                          </label>
+                          <p className="text-lg font-semibold text-gray-900 mt-1">
+                            {patientData.age} years
+                          </p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <label className="text-sm font-medium text-gray-600">
+                            Phone Number
+                          </label>
+                          <p className="text-lg font-semibold text-gray-900 mt-1">
+                            {patientData.phoneNumber}
+                          </p>
+                        </div>
+                        {patientData.gender && (
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <label className="text-sm font-medium text-gray-600">
+                              Gender
+                            </label>
+                            <p className="text-lg font-semibold text-gray-900 mt-1">
+                              {patientData.gender}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Vital Signs */}
+                    {(patientReport.bloodPressure || patientReport.heartRate || patientReport.temperature || patientReport.weight || patientReport.height) && (
+                      <div className="mb-8">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
+                          Vital Signs
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                          {patientReport.bloodPressure && (
+                            <div className="bg-red-50 border border-red-200 p-4 rounded-lg text-center">
+                              <Heart className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                              <label className="text-sm font-medium text-red-600">
+                                Blood Pressure
+                              </label>
+                              <p className="text-lg font-bold text-red-700 mt-1">
+                                {patientReport.bloodPressure}
+                              </p>
+                            </div>
+                          )}
+                          {patientReport.heartRate && (
+                            <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg text-center">
+                              <Activity className="w-8 h-8 text-pink-600 mx-auto mb-2" />
+                              <label className="text-sm font-medium text-pink-600">
+                                Heart Rate
+                              </label>
+                              <p className="text-lg font-bold text-pink-700 mt-1">
+                                {patientReport.heartRate} bpm
+                              </p>
+                            </div>
+                          )}
+                          {patientReport.temperature && (
+                            <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg text-center">
+                              <Thermometer className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                              <label className="text-sm font-medium text-orange-600">
+                                Temperature
+                              </label>
+                              <p className="text-lg font-bold text-orange-700 mt-1">
+                                {patientReport.temperature}°F
+                              </p>
+                            </div>
+                          )}
+                          {patientReport.weight && (
+                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">
+                              <User className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                              <label className="text-sm font-medium text-blue-600">
+                                Weight
+                              </label>
+                              <p className="text-lg font-bold text-blue-700 mt-1">
+                                {patientReport.weight} kg
+                              </p>
+                            </div>
+                          )}
+                          {patientReport.height && (
+                            <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-center">
+                              <User className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                              <label className="text-sm font-medium text-green-600">
+                                Height
+                              </label>
+                              <p className="text-lg font-bold text-green-700 mt-1">
+                                {patientReport.height} cm
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notes Section */}
+                    {patientReport.notes && (
+                      <div className="mb-8">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
+                          Notes
+                        </h3>
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                          <p className="text-gray-800 leading-relaxed">
+                            {patientReport.notes}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Follow-up Section */}
+                    {patientReport.followUp && (
+                      <div className="mb-8">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
+                          Follow-up
+                        </h3>
+                        <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg">
+                          <div className="flex items-start">
+                            <CheckCircle className="w-6 h-6 text-blue-600 mr-3 mt-0.5" />
+                            <p className="text-blue-800 leading-relaxed">
+                              {patientReport.followUp}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Associated Image */}
+                    {patientReport.imageUrl && (
+                      <div className="mb-8">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
+                          Associated Image
+                        </h3>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <img
+                            src={patientReport.imageUrl}
+                            alt="Patient Report"
+                            className="max-w-full h-auto rounded-lg shadow-md mx-auto"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Report Category */}
+                    <div className="border-t pt-6">
+                      <div className="flex justify-between items-center text-sm text-gray-600">
+                        <span>Category: <strong>{patientReport.category}</strong></span>
+                        <span>Report ID: <strong>{patientReport.id}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!patientData && !patientReport && !isLoadingReport && !reportError && (
+                <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                  <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Report Selected
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Scan a patient QR code to view their report
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("scan-qr")}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    Go to QR Scanner
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "messages" && (
+            <div className="space-y-6">
+              <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
+              <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No messages yet
+                </h3>
+                <p className="text-gray-600">
+                  Patient messages will appear here
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "reports" && (
+            <div className="space-y-6">
+              <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
+              <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Generate Reports
+                </h3>
+                <p className="text-gray-600">
+                  Create patient reports, medical summaries, and analytics
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+              <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Doctor Settings
+                </h3>
+                <p className="text-gray-600">
+                  Manage your profile, preferences, and clinic information
+                </p>
               </div>
             </div>
           )}
