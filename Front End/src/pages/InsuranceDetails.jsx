@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function InsuranceDetails() {
   const user = { firstName: "Sanjog", lastName: "Gautam" }; // Mock user data
+<<<<<<< HEAD
   const [selectedClaim, setSelectedClaim] = useState(null); //
   const [hasInsuranceCard, setHasInsuranceCard] = useState(false); //
   const [showCardForm, setShowCardForm] = useState(false); //
@@ -17,6 +18,52 @@ function InsuranceDetails() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [messageText, setMessageText] = useState("");
+=======
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [hasInsuranceCard, setHasInsuranceCard] = useState(false);
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [showExpiryAlert, setShowExpiryAlert] = useState(false);
+  const [insuranceData, setInsuranceData] = useState({
+    provider: "",
+    policyNumber: "",
+    memberID: "",
+    planType: "",
+    copay: "",
+    deductible: "",
+    expiryDate: ""
+  });
+
+  // Function to check if insurance is expiring within 10 days
+  const checkExpiryDate = (expiryDate) => {
+    if (!expiryDate) return false;
+    
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const timeDiff = expiry.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    return daysDiff <= 10 && daysDiff >= 0;
+  };
+
+  // Function to get days until expiry
+  const getDaysUntilExpiry = (expiryDate) => {
+    if (!expiryDate) return null;
+    
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const timeDiff = expiry.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    return daysDiff;
+  };
+
+  // Check expiry when insurance data changes
+  useEffect(() => {
+    if (hasInsuranceCard && insuranceData.expiryDate) {
+      setShowExpiryAlert(checkExpiryDate(insuranceData.expiryDate));
+    }
+  }, [hasInsuranceCard, insuranceData.expiryDate]);
+>>>>>>> 8a191cf9fc9b8bf516651ff34f6779bba37a7330
 
   const handleInputChange = (field, value) => {
     setInsuranceData(prev => ({
@@ -27,19 +74,34 @@ function InsuranceDetails() {
 
   const handleCardSubmit = () => {
     if (insuranceData.provider && insuranceData.policyNumber && insuranceData.memberID) {
+<<<<<<< HEAD
       setHasInsuranceCard(true); //
       setShowCardForm(false); //
       console.log("Insurance card details saved successfully!"); //
     } else {
       console.log("Please fill in all required fields"); //
+=======
+      setHasInsuranceCard(true);
+      setShowCardForm(false);
+      console.log("Insurance card details saved successfully!");
+    } else {
+      console.log("Please fill in all required fields");
+>>>>>>> 8a191cf9fc9b8bf516651ff34f6779bba37a7330
     }
   };
 
   const handleClaimSelect = (claimType) => {
+<<<<<<< HEAD
     if (!hasInsuranceCard) { //
       console.log("Please add your insurance card details first to proceed with claims"); //
       setShowCardForm(true); //
       return; //
+=======
+    if (!hasInsuranceCard) {
+      console.log("Please add your insurance card details first to proceed with claims");
+      setShowCardForm(true);
+      return;
+>>>>>>> 8a191cf9fc9b8bf516651ff34f6779bba37a7330
     }
     setSelectedClaim(claimType); //
     setShowFileUpload(false); // Reset file upload visibility
@@ -47,6 +109,7 @@ function InsuranceDetails() {
     setShowSuccessMessage(false); // Hide any previous success message
   };
 
+<<<<<<< HEAD
   const handleProceedClick = () => { // Renamed from handleClaimSubmit to differentiate initial click
     if (selectedClaim === 'Cashless') { // If it's a cashless claim
       setMessageText("Done"); // Set the "Done" message
@@ -55,6 +118,20 @@ function InsuranceDetails() {
     } else if (selectedClaim === 'Reimbursement') { // If it's a reimbursement claim
       setShowFileUpload(true); // Show the file upload option
     }
+=======
+  const handleClaimSubmit = () => {
+    console.log(`Submitting ${selectedClaim} claim`);
+    console.log(`${selectedClaim} claim process initiated!`);
+  };
+
+  const handleRenewPolicy = () => {
+    console.log("Redirecting to policy renewal...");
+    // In a real app, this would redirect to renewal page or open renewal modal
+  };
+
+  const dismissExpiryAlert = () => {
+    setShowExpiryAlert(false);
+>>>>>>> 8a191cf9fc9b8bf516651ff34f6779bba37a7330
   };
 
   const handleFileChange = (event) => {
@@ -99,7 +176,57 @@ function InsuranceDetails() {
           <p className="text-gray-600 mt-2">Manage your health insurance and claims</p>
         </div>
 
+<<<<<<< HEAD
         {/* Insurance Card Status (unchanged) */}
+=======
+        {/* Expiry Alert - Show when insurance is expiring within 10 days */}
+        {showExpiryAlert && hasInsuranceCard && insuranceData.expiryDate && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="flex items-start">
+              <div className="bg-red-100 p-2 rounded-full mr-4 flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-red-800">Policy Expiring Soon!</h3>
+                <p className="text-red-700 mt-1">
+                  Your insurance policy expires in{' '}
+                  <span className="font-bold">
+                    {getDaysUntilExpiry(insuranceData.expiryDate)} day(s)
+                  </span>{' '}
+                  on {new Date(insuranceData.expiryDate).toLocaleDateString()}. 
+                  Renew now to avoid coverage gaps.
+                </p>
+                <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleRenewPolicy}
+                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
+                  >
+                    Renew Policy Now
+                  </button>
+                  <button
+                    onClick={dismissExpiryAlert}
+                    className="px-4 py-2 text-red-600 hover:text-red-700 text-sm underline"
+                  >
+                    Dismiss Alert
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={dismissExpiryAlert}
+                className="text-red-400 hover:text-red-600 flex-shrink-0"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Insurance Card Status */}
+>>>>>>> 8a191cf9fc9b8bf516651ff34f6779bba37a7330
         <div className="mb-8">
           {!hasInsuranceCard ? (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
@@ -143,6 +270,21 @@ function InsuranceDetails() {
                   <p>{user?.firstName} {user?.lastName}</p>
                 </div>
               </div>
+              {insuranceData.expiryDate && (
+                <div className="mt-4 pt-4 border-t border-blue-500">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-blue-100">Expires On</p>
+                      <p className="font-medium">{new Date(insuranceData.expiryDate).toLocaleDateString()}</p>
+                    </div>
+                    {checkExpiryDate(insuranceData.expiryDate) && (
+                      <div className="bg-red-500 px-3 py-1 rounded-full">
+                        <p className="text-xs font-medium">Expires Soon</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => setShowCardForm(true)}
@@ -158,7 +300,7 @@ function InsuranceDetails() {
         {/* Insurance Card Form Modal (unchanged) */}
         {showCardForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-screen overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Insurance Card Details</h2>
                 <button
@@ -223,6 +365,49 @@ function InsuranceDetails() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
+<<<<<<< HEAD
+=======
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Policy Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    value={insuranceData.expiryDate}
+                    onChange={(e) => handleInputChange('expiryDate', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">We'll alert you when your policy is about to expire</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Copay
+                    </label>
+                    <input
+                      type="text"
+                      value={insuranceData.copay}
+                      onChange={(e) => handleInputChange('copay', e.target.value)}
+                      placeholder="e.g., $25"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Deductible
+                    </label>
+                    <input
+                      type="text"
+                      value={insuranceData.deductible}
+                      onChange={(e) => handleInputChange('deductible', e.target.value)}
+                      placeholder="e.g., $1,500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+>>>>>>> 8a191cf9fc9b8bf516651ff34f6779bba37a7330
               </div>
 
               <div className="flex space-x-3 mt-6">
@@ -408,11 +593,30 @@ function InsuranceDetails() {
                   Contact Support
                 </button>
               </div>
+<<<<<<< HEAD
               <button className="w-full flex items-center justify-center my-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                 <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Renew Policy
+=======
+              
+              {/* Renew Policy Button */}
+              <button 
+                onClick={handleRenewPolicy}
+                className={`w-full flex items-center justify-center my-3 p-4 border rounded-lg transition-colors duration-200 ${
+                  checkExpiryDate(insuranceData.expiryDate) 
+                    ? 'border-red-300 bg-red-50 hover:bg-red-100 text-red-700' 
+                    : 'border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <svg className={`w-5 h-5 mr-2 ${
+                  checkExpiryDate(insuranceData.expiryDate) ? 'text-red-600' : 'text-blue-600'
+                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                {checkExpiryDate(insuranceData.expiryDate) ? 'Renew Policy (Expires Soon!)' : 'Renew Policy'}
+>>>>>>> 8a191cf9fc9b8bf516651ff34f6779bba37a7330
               </button>
             </div>
           </div>
